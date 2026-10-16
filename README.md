@@ -238,6 +238,22 @@ kubectl -n monitoring port-forward svc/kps-grafana 3001:80         # http://loca
 
 ---
 
+## Pipeline runs and cloud evidence
+
+| What | Where |
+|---|---|
+| CI run (lint → tests → frontend build → Trivy → GHCR push → compose integration) | https://github.com/PRAteek-singHWY/campus-lostfound-devops-capstone/actions/workflows/ci.yml |
+| CD run (Helm deploy to kind + smoke test) | https://github.com/PRAteek-singHWY/campus-lostfound-devops-capstone/actions/workflows/cd.yml |
+| Terraform workflow (fmt, validate, tflint, LocalStack apply/destroy) | https://github.com/PRAteek-singHWY/campus-lostfound-devops-capstone/actions/workflows/terraform.yml |
+| Published images | https://github.com/PRAteek-singHWY?tab=packages |
+| `terraform plan` against the real account (26 resources) | [`docs/evidence/08-terraform-plan.txt`](docs/evidence/08-terraform-plan.txt) |
+| `terraform apply` / `destroy` output | `docs/evidence/09-terraform-apply.txt`, `docs/evidence/11-terraform-destroy.txt` |
+
+The capstone AWS account sits under an AWS Organization whose service control policy only allows
+**ap-southeast-2** and denies S3, so `terraform.tfvars` targets Sydney with
+`enable_backups_bucket = false`. The same code runs unchanged in an unrestricted account with the
+defaults in `terraform.tfvars.example`.
+
 ## Troubleshooting
 
 Real incidents from building this project, with the diagnosis commands and fixes, are in
