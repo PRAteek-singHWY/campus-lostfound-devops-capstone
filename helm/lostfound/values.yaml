@@ -22,6 +22,8 @@ backend:
     LOG_LEVEL: "info"
 
 frontend:
+  service:
+    type: ClusterIP        # LoadBalancer on EKS when no ingress controller is installed
   image:
     repository: ghcr.io/prateek-singhwy/lostfound-frontend
     tag: ""

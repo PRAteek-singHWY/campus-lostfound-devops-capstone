@@ -1,0 +1,18 @@
+# Overlay for the Terraform-provisioned EKS cluster (no ingress controller or Prometheus Operator installed there).
+environment: eks
+backend:
+  replicaCount: 2
+  autoscaling: { enabled: true, minReplicas: 2, maxReplicas: 4 }
+frontend:
+  replicaCount: 2
+  service:
+    type: LoadBalancer      # AWS classic ELB in the public subnets (tagged kubernetes.io/role/elb)
+  image:
+    pullPolicy: Always
+postgres:
+  storage: { size: 5Gi, storageClassName: gp2 }
+ingress:
+  enabled: false
+monitoring:
+  serviceMonitor: { enabled: false }
+  prometheusRule: { enabled: false }

@@ -6,7 +6,7 @@ metadata:
     {{- include "lostfound.labels" . | nindent 4 }}
     app.kubernetes.io/component: frontend
 spec:
-  type: ClusterIP
+  type: {{ .Values.frontend.service.type }}
   selector: {{- include "lostfound.selector" (dict "ctx" . "tier" "frontend") | nindent 4 }}
   ports:
     - name: http
