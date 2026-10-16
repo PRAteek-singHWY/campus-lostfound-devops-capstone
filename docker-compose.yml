@@ -19,7 +19,7 @@ services:
 
   backend:
     build:
-      context: ./app/backend
+      context: ./backend
       args: { APP_VERSION: "${APP_VERSION:-compose}", GIT_SHA: "${GIT_SHA:-local}" }
     image: ${BACKEND_IMAGE:-lostfound-backend:local}
     environment:
@@ -36,13 +36,13 @@ services:
     networks: [backend-net, frontend-net]
 
   frontend:
-    build: ./app/frontend
+    build: ./frontend
     image: ${FRONTEND_IMAGE:-lostfound-frontend:local}
     environment:
       BACKEND_HOST: backend
       BACKEND_PORT: "8000"
     ports:
-      - "3100:80"
+      - "3000:8080"
     depends_on:
       backend:
         condition: service_healthy    # Dockerfile HEALTHCHECK on /api/live
