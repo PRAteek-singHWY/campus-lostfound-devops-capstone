@@ -9,11 +9,11 @@ RUN npm run build
 
 # Stage 2: serve it with nginx; Node never reaches the final image
 FROM nginxinc/nginx-unprivileged:1.27-alpine
-USER root
+USER 0
 RUN apk add --no-cache curl
 ENV BACKEND_HOST=backend BACKEND_PORT=8000
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
-USER nginx
+USER 101
 EXPOSE 8080
-HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD curl -fs http://localhost:8080/healthz || exit 1
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD ["curl", "-fs", "http://localhost:8080/healthz"]

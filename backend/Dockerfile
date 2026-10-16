@@ -14,7 +14,7 @@ ARG APP_VERSION=dev
 ARG GIT_SHA=local
 ENV APP_VERSION=${APP_VERSION} GIT_SHA=${GIT_SHA}
 RUN useradd --uid 10001 --no-create-home api
-USER api
+USER 10001
 EXPOSE 8000
-HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD curl -fs http://localhost:8000/api/live || exit 1
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD ["curl", "-fs", "http://localhost:8000/api/live"]
 ENTRYPOINT ["./entrypoint.sh"]
