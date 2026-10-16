@@ -1,0 +1,2 @@
+=== EKS cluster (Terraform-provisioned) ===
+$ kubectl get nodes -o wide

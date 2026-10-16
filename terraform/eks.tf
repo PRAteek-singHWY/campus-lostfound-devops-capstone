@@ -89,6 +89,11 @@ resource "aws_eks_node_group" "main" {
   instance_types  = [var.eks_node_instance_type]
   capacity_type   = "ON_DEMAND"
 
+  launch_template {
+    id      = aws_launch_template.eks_nodes[0].id
+    version = aws_launch_template.eks_nodes[0].latest_version
+  }
+
   scaling_config {
     desired_size = var.eks_node_count
     min_size     = 1
