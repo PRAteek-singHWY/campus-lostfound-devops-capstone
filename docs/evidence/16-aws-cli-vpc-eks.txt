@@ -1,0 +1,63 @@
+=== AWS account resources created by Terraform (via AWS CLI, profile capstone, ap-southeast-2) ===
+$ aws eks describe-cluster --name lostfound-dev-eks
+{
+    "name": "lostfound-dev-eks",
+    "status": "ACTIVE",
+    "version": "1.31",
+    "platform": "eks.71",
+    "endpoint": "https://C5FB0F2E5A586D679961E8513E84E55F.gr7.ap-southeast-2.eks.amazonaws.com",
+    "vpc": "vpc-0bbbc3d0dddd34583",
+    "subnets": [
+        "subnet-0cc46c521a0ff79e5",
+        "subnet-0f143d9dd56c5ac29"
+    ],
+    "created": "2026-10-16T23:25:42.602000+05:30"
+}
+
+$ aws eks describe-nodegroup --nodegroup-name lostfound-dev-workers
+{
+    "status": "ACTIVE",
+    "instanceTypes": [
+        "t3.small"
+    ],
+    "desired": 2,
+    "min": 1,
+    "max": 3,
+    "ami": "AL2023_x86_64_STANDARD",
+    "version": "1.31"
+}
+
+$ aws ec2 describe-vpcs --filters Name=tag:Project,Values=lostfound
+-----------------------------------------------------------------------------
+|                               DescribeVpcs                                |
++--------------+-------------------------+---------------------+------------+
+|     cidr     |           id            |        name         |   state    |
++--------------+-------------------------+---------------------+------------+
+|  10.50.0.0/16|  vpc-0bbbc3d0dddd34583  |  lostfound-dev-vpc  |  available |
++--------------+-------------------------+---------------------+------------+
+$ aws ec2 describe-subnets --filters Name=tag:Project,Values=lostfound
+-------------------------------------------------------------------------------------------------------
+|                                           DescribeSubnets                                           |
++-----------------+---------------+----------------------------+--------------------------+-----------+
+|       az        |     cidr      |            id              |          name            | publicIp  |
++-----------------+---------------+----------------------------+--------------------------+-----------+
+|  ap-southeast-2a|  10.50.0.0/24 |  subnet-0f143d9dd56c5ac29  |  lostfound-dev-public-1  |  True     |
+|  ap-southeast-2b|  10.50.1.0/24 |  subnet-0cc46c521a0ff79e5  |  lostfound-dev-public-2  |  True     |
++-----------------+---------------+----------------------------+--------------------------+-----------+
+$ aws ec2 describe-instances (worker nodes)
+------------------------------------------------------------------------------------
+|                                 DescribeInstances                                |
++-----------------+-----------------------+----------------+----------+------------+
+|       az        |          id           |   publicIp     |  state   |   type     |
++-----------------+-----------------------+----------------+----------+------------+
+|  ap-southeast-2b|  i-005210d109e56a126  |  32.236.38.162 |  running |  t3.small  |
+|  ap-southeast-2a|  i-0d03f9c8015d86fdb  |  13.54.155.134 |  running |  t3.small  |
++-----------------+-----------------------+----------------+----------+------------+
+$ aws elb describe-load-balancers (frontend Service type=LoadBalancer)
+----------------------------------------------------------------------------------------------
+|                                    DescribeLoadBalancers                                   |
++-----------+--------------------------------------------------------------------------------+
+|  dns      |  a127029813b7c4ea7aebdfe98ed52745-532677527.ap-southeast-2.elb.amazonaws.com   |
+|  instances|  2                                                                             |
+|  scheme   |  internet-facing                                                               |
++-----------+--------------------------------------------------------------------------------+

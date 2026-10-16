@@ -47,3 +47,20 @@ horizontalpodautoscaler.autoscaling/lostfound-backend   Deployment/lostfound-bac
 $ helm list -n lostfound
 NAME     	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART          	APP VERSION
 lostfound	lostfound	1       	2026-10-17 00:32:50.203984 +0530 IST	deployed	lostfound-1.0.0	1.0.0      
+
+=== Through the AWS load balancer ===
+$ curl http://a127029813b7c4ea7aebdfe98ed52745-532677527.ap-southeast-2.elb.amazonaws.com/api/health
+{"status":"ok","db":"up","version":"latest"}
+$ ./scripts/smoke-test.sh http://a127029813b7c4ea7aebdfe98ed52745-532677527.ap-southeast-2.elb.amazonaws.com
+smoke test against http://a127029813b7c4ea7aebdfe98ed52745-532677527.ap-southeast-2.elb.amazonaws.com
+  PASS frontend /healthz
+  PASS React index served
+  PASS backend readiness, db up
+  PASS backend liveness
+  PASS POST /api/items -> id 1
+  PASS GET /api/items lists it
+  PASS PATCH -> returned
+  PASS DELETE -> 204
+  PASS second DELETE -> 404
+  PASS invalid kind -> 422
+all smoke tests passed
