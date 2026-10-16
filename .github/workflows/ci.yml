@@ -112,7 +112,7 @@ jobs:
       - name: Build (load locally for scanning)
         uses: docker/build-push-action@v6
         with:
-          context: app/${{ matrix.component }}
+          context: ${{ matrix.component }}
           load: true
           tags: ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.sha_tag }}
           build-args: |
