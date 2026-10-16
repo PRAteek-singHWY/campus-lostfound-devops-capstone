@@ -134,7 +134,7 @@ Evidence (ps, non-root `id`, Alembic log, smoke test):
 
 `.github/workflows/cd.yml` runs when CI is green on `main`: creates a kind cluster, installs the
 Prometheus Operator CRDs, `helm upgrade --install` with `image.tag=sha-<commit>`, smoke-tests through
-the frontend Service and prints `helm history`. Image tags are the **commit SHA**, so every
+the frontend Service and prints `helm history` ([run](https://github.com/PRAteek-singHWY/campus-lostfound-devops-capstone/actions/runs/38945869755), [evidence](docs/evidence/14-cd-helm-deploy-kind.txt), ![CD](docs/screenshots/M5-actions-green-cd-run.jpg)). Image tags are the **commit SHA**, so every
 deployment is traceable and `helm rollback` returns to a known image.
 
 `.github/workflows/terraform.yml` runs `fmt`, `validate`, `tflint`, and a plan/apply/destroy of
