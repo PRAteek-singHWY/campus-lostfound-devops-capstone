@@ -1,56 +1,85 @@
-$ docker compose up -d --build --wait && docker compose ps && ./scripts/smoke-test.sh
- Network lostfound_frontend-net  Created
- Volume lostfound_pgdata  Creating
- Volume lostfound_pgdata  Created
- Container lostfound-db-1  Creating
- Container lostfound-db-1  Created
- Container lostfound-backend-1  Creating
- Container lostfound-backend-1  Created
- Container lostfound-frontend-1  Creating
- Container lostfound-frontend-1  Created
- Container lostfound-db-1  Starting
- Container lostfound-db-1  Started
- Container lostfound-db-1  Waiting
+$ docker compose up -d --build --wait
  Container lostfound-db-1  Healthy
- Container lostfound-backend-1  Starting
- Container lostfound-backend-1  Started
- Container lostfound-backend-1  Waiting
  Container lostfound-backend-1  Healthy
- Container lostfound-frontend-1  Starting
- Container lostfound-frontend-1  Started
- Container lostfound-backend-1  Waiting
- Container lostfound-frontend-1  Waiting
- Container lostfound-db-1  Waiting
- Container lostfound-backend-1  Healthy
- Container lostfound-db-1  Healthy
  Container lostfound-frontend-1  Healthy
-=== ps ===
-NAME                   IMAGE                      COMMAND                  SERVICE    CREATED          STATUS                    PORTS
-lostfound-backend-1    lostfound-backend:local    "uvicorn app.main:ap…"   backend    25 seconds ago   Up 21 seconds (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
-lostfound-db-1         postgres:16-alpine         "docker-entrypoint.s…"   db         25 seconds ago   Up 24 seconds (healthy)   5432/tcp
-lostfound-frontend-1   lostfound-frontend:local   "/docker-entrypoint.…"   frontend   25 seconds ago   Up 10 seconds (healthy)   0.0.0.0:3100->80/tcp, [::]:3100->80/tcp
-=== smoke ===
-smoke test against http://localhost:3100
+
+$ docker compose ps
+NAME                   IMAGE                      STATUS                    PORTS
+lostfound-backend-1    lostfound-backend:local    Up 54 seconds (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+lostfound-db-1         postgres:16-alpine         Up 57 seconds (healthy)   5432/tcp
+lostfound-frontend-1   lostfound-frontend:local   Up 43 seconds (healthy)   0.0.0.0:3000->8080/tcp, [::]:3000->8080/tcp
+
+$ docker compose exec backend id && docker compose exec frontend id   # both images run as non-root
+uid=10001(api) gid=10001(api) groups=10001(api)
+uid=101(nginx) gid=101(nginx) groups=101(nginx)
+
+$ docker compose logs backend | grep alembic
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_create_items, create items table
+INFO  [alembic.runtime.migration] Running upgrade 0001_create_items -> 0002_items_kind_check, add kind/status check constraints
+
+$ docker compose exec db psql -U lostfound -d lostfound -c "\dt" -c "select version_num from alembic_version"
+              List of relations
+ Schema |      Name       | Type  |   Owner   
+--------+-----------------+-------+-----------
+ public | alembic_version | table | lostfound
+ public | items           | table | lostfound
+(2 rows)
+
+      version_num      
+-----------------------
+ 0002_items_kind_check
+(1 row)
+
+
+$ ./scripts/smoke-test.sh http://localhost:3000
+smoke test against http://localhost:3000
   PASS frontend /healthz
   PASS React index served
   PASS backend readiness, db up
   PASS backend liveness
-  PASS POST /api/items -> id 1
+  PASS POST /api/items -> id 7
   PASS GET /api/items lists it
   PASS PATCH -> returned
   PASS DELETE -> 204
   PASS second DELETE -> 404
   PASS invalid kind -> 422
 all smoke tests passed
-=== metrics sample ===
-http_requests_total{method="GET",path="/api/live",status="200"} 3.0
-http_requests_total{method="GET",path="/api/health",status="200"} 2.0
-http_requests_total{method="POST",path="/api/items",status="201"} 1.0
-http_requests_total{method="GET",path="/api/items",status="200"} 1.0
-http_requests_total{method="PATCH",path="/api/items/{item_id}",status="200"} 1.0
-http_requests_total{method="DELETE",path="/api/items/{item_id}",status="204"} 1.0
-http_requests_total{method="DELETE",path="/api/items/{item_id}",status="404"} 1.0
-http_requests_total{method="POST",path="/api/items",status="422"} 1.0
-http_requests_total{method="GET",path="/api/metrics",status="404"} 1.0
-lostfound_db_up 1.0
 
+$ curl -s localhost:3000/api/items | python3 -m json.tool
+[
+    {
+        "id": 2,
+        "title": "Blue water bottle",
+        "location": "Library, 2nd floor",
+        "kind": "lost",
+        "status": "open"
+    },
+    {
+        "id": 3,
+        "title": "Casio fx-991 calculator",
+        "location": "Exam hall B",
+        "kind": "found",
+        "status": "returned"
+    },
+    {
+        "id": 4,
+        "title": "Black umbrella",
+        "location": "Bus stop, main gate",
+        "kind": "found",
+        "status": "open"
+    },
+    {
+        "id": 5,
+        "title": "Student ID card (Rahul)",
+        "location": "Cafeteria",
+        "kind": "found",
+        "status": "open"
+    },
+    {
+        "id": 6,
+        "title": "AirPods case",
+        "location": "Lecture hall 3",
+        "kind": "lost",
+        "status": "open"
+    }
+]

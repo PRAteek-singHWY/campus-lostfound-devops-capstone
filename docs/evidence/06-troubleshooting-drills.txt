@@ -1,0 +1,80 @@
+==============================================================
+DRILL 0 (real, unplanned): backend restarted once on first install
+==============================================================
+$ kubectl -n lostfound get pods -l app.kubernetes.io/component=backend
+NAME                                 READY   STATUS    RESTARTS        AGE
+lostfound-backend-5f59db8597-f4tsr   1/1     Running   1 (2m31s ago)   3m5s
+
+$ kubectl -n lostfound logs -l app.kubernetes.io/component=backend --previous | tail -8
+    await self._router.startup()
+  File "/usr/local/lib/python3.12/site-packages/starlette/routing.py", line 672, in startup
+    raise RuntimeError("could not reach the database")
+RuntimeError: could not reach the database
+ERROR:    Application startup failed. Exiting.
+
+Diagnosis: on a brand-new PVC Postgres takes ~30-40 s to initialise; the backend's retry
+budget (DB_RETRIES=15 x 2 s) ran out, it exited on purpose, kubelet restarted it, 2nd start OK.
+Fix: raise backend.env.DB_RETRIES to 30 in values.yaml (startupProbe already allows 60 s).
+
+==============================================================
+DRILL 1: wrong database host in ConfigMap (DB_HOST=postgres)
+==============================================================
+$ helm -n lostfound upgrade lostfound helm/lostfound --reuse-values --set backend.env.DB_HOST_OVERRIDE=postgres ...
+$ kubectl -n lostfound patch configmap lostfound-backend -p {"data":{"DB_HOST":"postgres"}} && kubectl rollout restart deploy/lostfound-backend
+$ kubectl -n lostfound get pods -l app.kubernetes.io/component=backend
+NAME                                 READY   STATUS    RESTARTS        AGE
+lostfound-backend-5f59db8597-f4tsr   1/1     Running   1 (3m16s ago)   3m50s
+lostfound-backend-86f798fb6c-cw2ld   0/1     Running   1 (11s ago)     45s
+
+$ kubectl -n lostfound logs deploy/lostfound-backend --tail=4
+Found 2 pods, using pod/lostfound-backend-5f59db8597-f4tsr
+INFO:     10.244.0.1:38888 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     10.244.0.1:43040 - "GET /api/live HTTP/1.1" 200 OK
+INFO:     10.244.0.1:43050 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     10.244.0.1:43066 - "GET /api/health HTTP/1.1" 200 OK
+
+$ kubectl -n lostfound describe pod -l app.kubernetes.io/component=backend | grep -A6 Events: | tail -5
+
+$ kubectl -n lostfound exec deploy/lostfound-backend -- getent hosts postgres lostfound-db
+postgres: no such host
+10.244.0.15     lostfound-db.lostfound.svc.cluster.local
+
+Symptom: new pod never becomes Ready (readiness /api/health -> 503), startup probe eventually
+kills it -> CrashLoopBackOff. Old ReplicaSet pod stays Ready, so the app keeps serving (maxUnavailable: 0).
+Root cause: 'postgres' is the image name, not the Service name. DNS only knows lostfound-db.
+
+FIX: $ helm -n lostfound upgrade lostfound helm/lostfound -f helm/lostfound/values-dev.yaml --set backend.image.tag=v1 --set frontend.image.tag=v1 --wait
+Waiting for deployment "lostfound-backend" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "lostfound-backend" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "lostfound-backend" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "lostfound-backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "lostfound-backend" rollout to finish: 1 old replicas are pending termination...
+error: timed out waiting for the condition
+$ kubectl -n lostfound get pods -l app.kubernetes.io/component=backend
+NAME                                 READY   STATUS             RESTARTS        AGE
+lostfound-backend-54cc9b645b-gjwlr   0/1     CrashLoopBackOff   2 (19s ago)     2m
+lostfound-backend-5f59db8597-f4tsr   1/1     Running            1 (5m17s ago)   5m51s
+$ curl localhost:3200/api/health
+{"status":"ok","db":"up","version":"v1"}
+
+!! The helm upgrade did NOT repair the ConfigMap:
+$ kubectl -n lostfound get cm lostfound-backend -o jsonpath="{.data.DB_HOST}"
+postgres
+Lesson: Helm does a three-way merge between the PREVIOUS release manifest, the NEW manifest and the live object.
+The manifest did not change between revisions, so Helm had nothing to patch and the hand-edited drift survived.
+Correct fix: change the value through Helm (so the manifest changes) or use --force / kubectl patch to undo the drift.
+$ kubectl -n lostfound patch cm lostfound-backend --type merge -p {"data":{"DB_HOST":"lostfound-db"}} && kubectl rollout restart deploy/lostfound-backend
+configmap/lostfound-backend patched
+deployment.apps/lostfound-backend restarted
+Waiting for deployment "lostfound-backend" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "lostfound-backend" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "lostfound-backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "lostfound-backend" rollout to finish: 1 old replicas are pending termination...
+deployment "lostfound-backend" successfully rolled out
+$ kubectl -n lostfound get pods -l app.kubernetes.io/component=backend
+NAME                                 READY   STATUS        RESTARTS        AGE
+lostfound-backend-54cc9b645b-gjwlr   0/1     Terminating   3 (52s ago)     2m33s
+lostfound-backend-5f59db8597-f4tsr   1/1     Terminating   1 (5m50s ago)   6m24s
+lostfound-backend-669dd65445-xs2jz   1/1     Running       0               5s
+$ curl localhost:3200/api/health
+{"status":"ok","db":"up","version":"v1"}

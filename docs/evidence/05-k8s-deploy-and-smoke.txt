@@ -1,0 +1,37 @@
+$ kubectl -n lostfound get pods,svc,ingress,pvc -o wide
+NAME                                     READY   STATUS    RESTARTS      AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+pod/lostfound-backend-5f59db8597-f4tsr   1/1     Running   1 (39s ago)   73s   10.244.0.13   minikube   <none>           <none>
+pod/lostfound-db-0                       1/1     Running   0             73s   10.244.0.15   minikube   <none>           <none>
+pod/lostfound-frontend-dc85764cc-c9xg2   1/1     Running   0             73s   10.244.0.14   minikube   <none>           <none>
+
+NAME                         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE   SELECTOR
+service/lostfound-backend    ClusterIP   10.110.255.182   <none>        8000/TCP   73s   app.kubernetes.io/component=backend,app.kubernetes.io/instance=lostfound,app.kubernetes.io/name=lostfound
+service/lostfound-db         ClusterIP   None             <none>        5432/TCP   73s   app.kubernetes.io/component=db,app.kubernetes.io/instance=lostfound,app.kubernetes.io/name=lostfound
+service/lostfound-frontend   ClusterIP   10.109.167.119   <none>        80/TCP     73s   app.kubernetes.io/component=frontend,app.kubernetes.io/instance=lostfound,app.kubernetes.io/name=lostfound
+
+NAME                                  CLASS   HOSTS             ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/lostfound   nginx   lostfound.local   192.168.49.2   80      73s
+
+NAME                                        STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE   VOLUMEMODE
+persistentvolumeclaim/data-lostfound-db-0   Bound    pvc-c252a21d-a1b7-49e6-bcfe-b8d35d95dbb8   1Gi        RWO            standard       <unset>                 73s   Filesystem
+
+$ helm -n lostfound history lostfound
+REVISION	UPDATED                 	STATUS  	CHART          	APP VERSION	DESCRIPTION     
+1       	Fri Oct 16 22:36:31 2026	deployed	lostfound-1.0.0	1.0.0      	Install complete
+
+$ kubectl -n lostfound port-forward svc/lostfound-frontend 3200:80 &  ./scripts/smoke-test.sh http://localhost:3200
+smoke test against http://localhost:3200
+  PASS frontend /healthz
+  PASS React index served
+  PASS backend readiness, db up
+  PASS backend liveness
+  PASS POST /api/items -> id 1
+  PASS GET /api/items lists it
+  PASS PATCH -> returned
+  PASS DELETE -> 204
+  PASS second DELETE -> 404
+  PASS invalid kind -> 422
+all smoke tests passed
+
+$ curl -H "Host: lostfound.local" http://$(minikube ip)/api/health   # through the Ingress
+

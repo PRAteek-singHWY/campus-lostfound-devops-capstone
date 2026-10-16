@@ -1,4 +1,7 @@
-$ cd app/backend && flake8 app tests && pytest
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
     return self.router.on_event(event_type)
 
 
@@ -6,8 +9,8 @@ $ cd app/backend && flake8 app tests && pytest
 Name              Stmts   Miss  Cover   Missing
 -----------------------------------------------
 app/__init__.py       0      0   100%
-app/main.py         100     16    84%   48-50, 76, 84-104
+app/main.py         121     16    87%   48-50, 82, 90-110
 -----------------------------------------------
-TOTAL               100     16    84%
+TOTAL               121     16    87%
 
-Required test coverage of 80% reached. Total coverage: 84.00%
+Required test coverage of 80% reached. Total coverage: 86.78%

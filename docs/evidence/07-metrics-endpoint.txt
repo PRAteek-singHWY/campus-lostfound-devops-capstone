@@ -1,0 +1,31 @@
+$ curl -s localhost:8000/metrics | grep -E "^(http_requests_total|http_request_duration_seconds_(count|bucket)|lostfound_)"
+# HELP http_requests_total HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{method="GET",path="/api/live",status="200"} 7.0
+http_requests_total{method="GET",path="/api/health",status="200"} 4.0
+http_requests_total{method="POST",path="/api/items",status="201"} 7.0
+http_requests_total{method="GET",path="/api/items",status="200"} 3.0
+http_requests_total{method="PATCH",path="/api/items/{item_id}",status="200"} 3.0
+http_requests_total{method="DELETE",path="/api/items/{item_id}",status="204"} 2.0
+http_requests_total{method="DELETE",path="/api/items/{item_id}",status="404"} 2.0
+http_requests_total{method="POST",path="/api/items",status="422"} 2.0
+http_requests_total{method="GET",path="/api/metrics",status="404"} 2.0
+# HELP http_requests_created HTTP requests
+# TYPE http_requests_created gauge
+# HELP http_request_duration_seconds Request latency
+# TYPE http_request_duration_seconds histogram
+http_request_duration_seconds_count{method="GET",path="/api/live"} 7.0
+http_request_duration_seconds_count{method="GET",path="/api/health"} 4.0
+http_request_duration_seconds_count{method="POST",path="/api/items"} 9.0
+http_request_duration_seconds_count{method="GET",path="/api/items"} 3.0
+http_request_duration_seconds_count{method="PATCH",path="/api/items/{item_id}"} 3.0
+http_request_duration_seconds_count{method="DELETE",path="/api/items/{item_id}"} 4.0
+http_request_duration_seconds_count{method="GET",path="/api/metrics"} 2.0
+# HELP http_request_duration_seconds_created Request latency
+# TYPE http_request_duration_seconds_created gauge
+# HELP lostfound_db_up 1 if the last database check succeeded
+# TYPE lostfound_db_up gauge
+lostfound_db_up 1.0
+# HELP lostfound_items_open Open (not yet returned) items
+# TYPE lostfound_items_open gauge
+lostfound_items_open 4.0
