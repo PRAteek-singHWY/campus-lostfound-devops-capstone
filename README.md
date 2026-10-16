@@ -181,6 +181,23 @@ terraform destroy                                 # tear everything down after t
 | `storage.tf` | Versioned, encrypted, private S3 bucket for nightly `pg_dump` backups with 30-day expiry |
 | `provider.tf` | `use_localstack=true` redirects every API call to LocalStack (used by CI) |
 
+**Applied for real** in the capstone account (Sydney): VPC `vpc-0bbbc3d0dddd34583`, two public subnets,
+EKS `lostfound-dev-eks` (1.31, two t3.small workers), `metrics-server` and `aws-ebs-csi-driver`
+add-ons. The app was then deployed to EKS with `helm/lostfound/values-eks.yaml`
+(`scripts/eks-deploy.sh`): 2+2 pods Running, Postgres on a 5 Gi gp2 EBS volume, HPA live, and the
+frontend reachable through an AWS classic load balancer; the smoke test passed through that URL.
+Evidence: [`docs/evidence/09-terraform-apply.txt`](docs/evidence/09-terraform-apply.txt),
+[`docs/evidence/15-eks-deploy.txt`](docs/evidence/15-eks-deploy.txt),
+[`docs/evidence/16-aws-cli-vpc-eks.txt`](docs/evidence/16-aws-cli-vpc-eks.txt),
+[`docs/evidence/11-terraform-destroy.txt`](docs/evidence/11-terraform-destroy.txt).
+
+![app on EKS](docs/screenshots/M8-app-on-eks-browser.jpg)
+
+Two real-world fixes came out of this run and are both now in the code: Free Tier accounts can only
+launch free-tier-eligible instance types (so `t3.small`, not `t3.medium`), and managed nodes need an
+IMDSv2 hop limit of 2 (launch template) or the EBS CSI controller cannot obtain credentials and
+crash-loops.
+
 `terraform.tfvars.example` is committed; `terraform.tfvars`, state files and `.terraform/` are
 ignored. Validation output: [`docs/evidence/04-terraform-validate.txt`](docs/evidence/04-terraform-validate.txt).
 Plan/apply/destroy output against the real account is in `docs/evidence/08-terraform-*.txt` when present.

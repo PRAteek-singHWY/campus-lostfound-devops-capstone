@@ -64,3 +64,16 @@ smoke test against http://a127029813b7c4ea7aebdfe98ed52745-532677527.ap-southeas
   PASS second DELETE -> 404
   PASS invalid kind -> 422
 all smoke tests passed
+
+=== HPA on EKS (metrics-server add-on) ===
+$ kubectl -n lostfound get hpa
+NAME                REFERENCE                      TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+lostfound-backend   Deployment/lostfound-backend   cpu: 8%/60%   2         4         2          4m24s
+
+$ kubectl -n lostfound top pods
+NAME                                  CPU(cores)   MEMORY(bytes)   
+lostfound-backend-667d57d5c7-bnmv5    4m           45Mi            
+lostfound-backend-667d57d5c7-k22fz    4m           45Mi            
+lostfound-db-0                        8m           33Mi            
+lostfound-frontend-74d6c8c96b-98h2q   1m           3Mi             
+lostfound-frontend-74d6c8c96b-tpkhq   1m           3Mi             

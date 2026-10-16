@@ -88,3 +88,24 @@ itself because a database can also restart *after* the app is up.
 kubectl -n lostfound run probe --rm -i --restart=Never --image=curlimages/curl:8.10.1 -- \
   -s -i -H "Host: lostfound.local" http://ingress-nginx-controller.ingress-nginx/api/health
 ```
+
+## 8. EKS node group stuck in CREATING
+
+**Seen:** `aws eks describe-nodegroup` → `CREATING` for 15+ minutes, no EC2 instances.
+**Found with:** `aws autoscaling describe-scaling-activities` on the node group's ASG →
+`InvalidParameterCombination - The specified instance type is not eligible for Free Tier`.
+**Cause:** the account is on the AWS Free Tier plan, which only allows free-tier-eligible types;
+`t3.medium` is not one (`aws ec2 describe-instance-types --filters Name=free-tier-eligible,Values=true`).
+**Fix:** `eks_node_instance_type = "t3.small"`; delete the stuck node group and re-apply.
+
+## 9. EBS CSI controller CrashLoopBackOff on EKS
+
+**Seen:** `ebs-csi-controller-… 1/6 CrashLoopBackOff`, add-on stuck `CREATING`, PVC would stay Pending.
+**Found with:** `kubectl -n kube-system logs deploy/ebs-csi-controller -c ebs-plugin` →
+`Failed health check (verify network connection and IAM credentials): dry-run EC2 API call failed`;
+`aws ec2 describe-instances … MetadataOptions.HttpPutResponseHopLimit` → `1`.
+**Cause:** with IMDSv2 and a hop limit of 1, a pod (one extra network hop from the node) cannot
+reach the instance-metadata credentials of the node role.
+**Fix:** `aws ec2 modify-instance-metadata-options --http-put-response-hop-limit 2` on the nodes
+(immediate), and permanently a launch template with `http_put_response_hop_limit = 2` in
+`terraform/launch_template.tf`. Controller became `6/6 Running`, PVC bound within seconds.
