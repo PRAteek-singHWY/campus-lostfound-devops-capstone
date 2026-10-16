@@ -44,8 +44,18 @@ class FakeDB:
         s = " ".join(sql.split())
         if s.startswith("SELECT 1"):
             return FakeCursor([{"?column?": 1}])
+        if s.startswith("SELECT id, title, location, kind, status FROM items WHERE"):
+            (item_id,) = params
+            return FakeCursor([self.items[item_id]] if item_id in self.items else [])
         if s.startswith("SELECT id, title, location, kind, status FROM items"):
             return FakeCursor([self.items[i] for i in sorted(self.items)])
+        if s.startswith("UPDATE items SET title"):
+            title, location, kind, item_id = params
+            row = self.items.get(item_id)
+            if row:
+                row.update(title=title, location=location, kind=kind)
+                return FakeCursor([row])
+            return FakeCursor([])
         if s.startswith("INSERT INTO items"):
             title, location, kind = params
             row = {"id": self.next_id, "title": title, "location": location,
