@@ -8,6 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt \
     && apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 COPY app ./app
+COPY alembic ./alembic
+COPY alembic.ini entrypoint.sh ./
 ARG APP_VERSION=dev
 ARG GIT_SHA=local
 ENV APP_VERSION=${APP_VERSION} GIT_SHA=${GIT_SHA}
@@ -15,4 +17,4 @@ RUN useradd --uid 10001 --no-create-home api
 USER api
 EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD curl -fs http://localhost:8000/api/live || exit 1
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["./entrypoint.sh"]
