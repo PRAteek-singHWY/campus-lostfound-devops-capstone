@@ -86,3 +86,33 @@ variable "localstack_ami_id" {
   type        = string
   default     = "ami-1e749f67"
 }
+
+variable "enable_eks" {
+  description = "Create the EKS cluster and node group (false = EC2/compose host only)"
+  type        = bool
+  default     = true
+}
+
+variable "eks_version" {
+  description = "Kubernetes version for the EKS control plane"
+  type        = string
+  default     = "1.31"
+}
+
+variable "eks_node_instance_type" {
+  description = "Instance type for the managed node group"
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "eks_node_count" {
+  description = "Desired worker nodes"
+  type        = number
+  default     = 2
+}
+
+variable "enable_app_host" {
+  description = "Create the standalone EC2 host that runs the stack with docker compose"
+  type        = bool
+  default     = false
+}

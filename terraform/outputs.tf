@@ -11,16 +11,16 @@ output "security_group_id" {
 }
 
 output "instance_id" {
-  value = aws_instance.app.id
+  value = var.enable_app_host ? aws_instance.app[0].id : null
 }
 
 output "app_public_ip" {
   description = "Open http://<ip>/ once cloud-init has finished (2-3 minutes)"
-  value       = aws_instance.app.public_ip
+  value       = var.enable_app_host ? aws_instance.app[0].public_ip : null
 }
 
 output "app_url" {
-  value = "http://${aws_instance.app.public_ip}/"
+  value = var.enable_app_host ? "http://${aws_instance.app[0].public_ip}/" : null
 }
 
 output "backup_bucket" {
@@ -29,6 +29,19 @@ output "backup_bucket" {
 
 output "ssh_private_key_pem" {
   description = "terraform output -raw ssh_private_key_pem > lostfound.pem && chmod 600 lostfound.pem"
-  value       = tls_private_key.ssh.private_key_openssh
+  value       = var.enable_app_host ? tls_private_key.ssh[0].private_key_openssh : null
   sensitive   = true
+}
+
+output "eks_cluster_name" {
+  value = var.enable_eks ? aws_eks_cluster.main[0].name : null
+}
+
+output "eks_cluster_endpoint" {
+  value = var.enable_eks ? aws_eks_cluster.main[0].endpoint : null
+}
+
+output "configure_kubectl" {
+  description = "Run this to point kubectl at the new cluster"
+  value       = var.enable_eks ? "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.main[0].name}${var.aws_profile != null ? " --profile ${var.aws_profile}" : ""}" : null
 }

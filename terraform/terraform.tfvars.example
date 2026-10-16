@@ -1,7 +1,12 @@
-aws_region   = "ap-south-1"
-aws_profile  = "capstone"
-environment  = "dev"
-instance_type = "t3.small"
-admin_cidr   = "203.0.113.10/32"   # your IP
-image_tag    = "latest"
-# db_password via: export TF_VAR_db_password='...'
+aws_region             = "ap-south-1"
+aws_profile            = "capstone"      # named profile from `aws configure --profile capstone`
+environment            = "dev"
+enable_eks             = true
+eks_version            = "1.31"
+eks_node_instance_type = "t3.medium"
+eks_node_count         = 2
+enable_app_host        = false           # true also creates the EC2 + docker compose host
+admin_cidr             = "203.0.113.10/32"
+image_tag              = "latest"
+# Never commit real values. Secrets go through environment variables:
+#   export TF_VAR_db_password='...'
