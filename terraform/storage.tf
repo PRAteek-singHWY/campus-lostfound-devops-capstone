@@ -1,18 +1,21 @@
 # Private, versioned, encrypted bucket for nightly pg_dump backups taken by the host.
 resource "aws_s3_bucket" "backups" {
+  count         = var.enable_backups_bucket ? 1 : 0
   bucket_prefix = "${local.name}-db-backups-"
   force_destroy = var.environment != "prod"
 }
 
 resource "aws_s3_bucket_versioning" "backups" {
-  bucket = aws_s3_bucket.backups.id
+  count  = var.enable_backups_bucket ? 1 : 0
+  bucket = aws_s3_bucket.backups[0].id
   versioning_configuration {
     status = "Enabled"
   }
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "backups" {
-  bucket = aws_s3_bucket.backups.id
+  count  = var.enable_backups_bucket ? 1 : 0
+  bucket = aws_s3_bucket.backups[0].id
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
@@ -21,7 +24,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "backups" {
 }
 
 resource "aws_s3_bucket_public_access_block" "backups" {
-  bucket                  = aws_s3_bucket.backups.id
+  count                   = var.enable_backups_bucket ? 1 : 0
+  bucket                  = aws_s3_bucket.backups[0].id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -29,7 +33,8 @@ resource "aws_s3_bucket_public_access_block" "backups" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "backups" {
-  bucket = aws_s3_bucket.backups.id
+  count  = var.enable_backups_bucket ? 1 : 0
+  bucket = aws_s3_bucket.backups[0].id
   rule {
     id     = "expire-old-backups"
     status = "Enabled"

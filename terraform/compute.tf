@@ -39,7 +39,7 @@ resource "aws_instance" "app" {
   user_data = templatefile("${path.module}/user_data.sh.tftpl", {
     image_tag     = var.image_tag
     db_password   = var.db_password
-    backup_bucket = aws_s3_bucket.backups.bucket
+    backup_bucket = var.enable_backups_bucket ? aws_s3_bucket.backups[0].bucket : ""
     aws_region    = var.aws_region
   })
   user_data_replace_on_change = true

@@ -24,7 +24,7 @@ output "app_url" {
 }
 
 output "backup_bucket" {
-  value = aws_s3_bucket.backups.bucket
+  value = var.enable_backups_bucket ? aws_s3_bucket.backups[0].bucket : null
 }
 
 output "ssh_private_key_pem" {

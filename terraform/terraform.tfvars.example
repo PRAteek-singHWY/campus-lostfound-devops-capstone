@@ -1,11 +1,12 @@
-aws_region             = "ap-south-1"
+aws_region             = "ap-southeast-2"   # the capstone account's organisation policy only allows Sydney
 aws_profile            = "capstone"      # named profile from `aws configure --profile capstone`
 environment            = "dev"
 enable_eks             = true
 eks_version            = "1.31"
 eks_node_instance_type = "t3.medium"
 eks_node_count         = 2
-enable_app_host        = false           # true also creates the EC2 + docker compose host
+enable_app_host        = false
+enable_backups_bucket  = false           # S3 is denied by the organisation SCP on this account           # true also creates the EC2 + docker compose host
 admin_cidr             = "203.0.113.10/32"
 image_tag              = "latest"
 # Never commit real values. Secrets go through environment variables:

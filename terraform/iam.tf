@@ -15,17 +15,19 @@ resource "aws_iam_role" "app" {
 }
 
 data "aws_iam_policy_document" "backups" {
+  count = var.enable_backups_bucket ? 1 : 0
   statement {
     sid       = "BackupBucketRW"
     actions   = ["s3:PutObject", "s3:GetObject", "s3:ListBucket"]
-    resources = [aws_s3_bucket.backups.arn, "${aws_s3_bucket.backups.arn}/*"]
+    resources = [aws_s3_bucket.backups[0].arn, "${aws_s3_bucket.backups[0].arn}/*"]
   }
 }
 
 resource "aws_iam_role_policy" "backups" {
+  count  = var.enable_backups_bucket ? 1 : 0
   name   = "${local.name}-backups"
   role   = aws_iam_role.app.id
-  policy = data.aws_iam_policy_document.backups.json
+  policy = data.aws_iam_policy_document.backups[0].json
 }
 
 resource "aws_iam_role_policy_attachment" "ssm" {

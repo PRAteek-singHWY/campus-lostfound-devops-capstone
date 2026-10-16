@@ -116,3 +116,9 @@ variable "enable_app_host" {
   type        = bool
   default     = false
 }
+
+variable "enable_backups_bucket" {
+  description = "Create the S3 backups bucket (some organisation SCPs deny S3; disable to skip it)"
+  type        = bool
+  default     = true
+}
