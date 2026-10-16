@@ -144,10 +144,14 @@ cloud credentials.
 Both images are scanned in the `build` job with `aquasecurity/trivy-action`, `severity: HIGH,CRITICAL`,
 `exit-code: 1`, `ignore-unfixed: true`. Trivy inspects the OS packages of the base image
 (Debian for the backend, Alpine for the frontend) and the language dependencies (`pip` packages,
-`npm` packages that survive into `dist/`). A clean result means no known **fixable** HIGH or
-CRITICAL CVE is present in what we ship; unfixed CVEs are reported but do not block, because no
-upstream patch exists yet. The fix for a finding is to bump the base image tag or the pinned
-dependency and let the pipeline re-scan.
+`npm` packages that survive into `dist/`). The gate fired for real on the first full run
+([`docs/evidence/12-trivy-findings.txt`](docs/evidence/12-trivy-findings.txt)): the
+`nginx-unprivileged:1.27-alpine` base image carried **CVE-2026-31789** (CRITICAL, OpenSSL heap
+buffer overflow in `libcrypto3`/`libssl3` 3.3.3) and **CVE-2026-33630** (HIGH, use-after-free in
+`c-ares`), both with fixed Alpine packages available, so the build was blocked and no image was
+pushed. The fix was to move to the current `1.29-alpine` tag and run `apk upgrade` in the
+Dockerfile; the backend image got the equivalent `apt-get upgrade`. Unfixed CVEs are reported but
+do not block (`ignore-unfixed`), because no upstream patch exists yet.
 
 ---
 

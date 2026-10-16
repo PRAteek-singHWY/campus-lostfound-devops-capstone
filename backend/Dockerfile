@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 # dependencies first so code edits do not reinstall them
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
-    && apt-get update && apt-get install -y --no-install-recommends curl \
+    && apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 COPY app ./app
 COPY alembic ./alembic
