@@ -60,9 +60,9 @@ $ curl localhost:3200/api/health
 !! The helm upgrade did NOT repair the ConfigMap:
 $ kubectl -n lostfound get cm lostfound-backend -o jsonpath="{.data.DB_HOST}"
 postgres
-Lesson: Helm does a three-way merge between the PREVIOUS release manifest, the NEW manifest and the live object.
-The manifest did not change between revisions, so Helm had nothing to patch and the hand-edited drift survived.
-Correct fix: change the value through Helm (so the manifest changes) or use --force / kubectl patch to undo the drift.
+Lesson (see `helm history`): revision 2 FAILED with a server-side-apply conflict: field .data.DB_HOST is owned by
+manager "kubectl-patch", and Helm refuses to overwrite another manager's field. Hand-edited drift blocks upgrades.
+Correct fix: undo the drift (kubectl patch back, or apply --force-conflicts) and change config only through Helm values.
 $ kubectl -n lostfound patch cm lostfound-backend --type merge -p {"data":{"DB_HOST":"lostfound-db"}} && kubectl rollout restart deploy/lostfound-backend
 configmap/lostfound-backend patched
 deployment.apps/lostfound-backend restarted

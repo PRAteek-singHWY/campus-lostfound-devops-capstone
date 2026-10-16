@@ -15,8 +15,15 @@ docker build -t "$FRONTEND:$TAG" frontend
 minikube image load "$BACKEND:$TAG"
 minikube image load "$FRONTEND:$TAG"
 
-helm upgrade --install lostfound helm/lostfound -n "$NS" --create-namespace -f "$VALUES" \
-  --set backend.image.tag="$TAG" --set frontend.image.tag="$TAG" \
+# enable the ServiceMonitor/PrometheusRule only when the Prometheus Operator CRDs exist
+MON=""
+kubectl get crd servicemonitors.monitoring.coreos.com >/dev/null 2>&1 \
+  && MON="--set monitoring.serviceMonitor.enabled=true --set monitoring.prometheusRule.enabled=true"
+
+kubectl apply -f k8s/namespace.yaml
+# shellcheck disable=SC2086
+helm upgrade --install lostfound helm/lostfound -n "$NS" -f "$VALUES" \
+  --set backend.image.tag="$TAG" --set frontend.image.tag="$TAG" $MON \
   --wait --timeout 5m
 kubectl -n "$NS" get pods,svc,ingress,hpa,pvc -o wide
 helm -n "$NS" history lostfound
