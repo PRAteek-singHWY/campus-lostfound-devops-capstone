@@ -1,4 +1,5 @@
-# Infra pipeline: fmt/validate on every change, plan against LocalStack on PRs so it needs no cloud credentials.
+# Infra pipeline: fmt, validate and tflint on every change; plan/apply of the network+S3 subset
+# against LocalStack on PRs (EKS itself needs a real account and is applied from a workstation).
 name: Terraform
 
 on:
@@ -13,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  plan:
+  validate:
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: terraform } }
     services:
@@ -28,13 +29,11 @@ jobs:
       - run: terraform fmt -check -recursive
       - run: terraform init -input=false
       - run: terraform validate
-      - name: tflint
-        uses: terraform-linters/setup-tflint@v4
+      - uses: terraform-linters/setup-tflint@v4
       - run: tflint --init && tflint
-      - name: Plan against LocalStack
-        run: terraform plan -input=false -var use_localstack=true -out=tfplan
-      - name: Apply + destroy against LocalStack (proves the graph builds end to end)
+      - name: Plan + apply network and S3 subset against LocalStack
         run: |
+          terraform plan -input=false -var use_localstack=true -var enable_eks=false -out=tfplan
           terraform apply -input=false -auto-approve tfplan
           terraform output
-          terraform destroy -input=false -auto-approve -var use_localstack=true
+          terraform destroy -input=false -auto-approve -var use_localstack=true -var enable_eks=false

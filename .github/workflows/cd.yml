@@ -38,9 +38,11 @@ jobs:
           helm install kps prometheus-community/kube-prometheus-stack -n monitoring --create-namespace \
             --set grafana.enabled=false --set alertmanager.enabled=false --set nodeExporter.enabled=false \
             --set kubeStateMetrics.enabled=false --set prometheus.enabled=false --wait --timeout 5m
+      - name: Bootstrap namespace
+        run: kubectl apply -f k8s/namespace.yaml
       - name: helm upgrade --install
         run: |
-          helm upgrade --install lostfound helm/lostfound -n lostfound --create-namespace \
+          helm upgrade --install lostfound helm/lostfound -n lostfound \
             --set backend.image.tag=${{ steps.meta.outputs.sha_tag }} \
             --set frontend.image.tag=${{ steps.meta.outputs.sha_tag }} \
             --set backend.autoscaling.enabled=false --set ingress.enabled=false \

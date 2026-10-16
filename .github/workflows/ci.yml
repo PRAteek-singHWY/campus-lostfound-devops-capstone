@@ -32,12 +32,12 @@ jobs:
         with: { python-version: "3.12" }
       - run: pip install flake8==7.1.1
       - name: flake8
-        working-directory: app/backend
+        working-directory: backend
         run: flake8 app tests
       - name: hadolint backend Dockerfile
-        run: docker run --rm -i hadolint/hadolint:latest-debian hadolint --ignore DL3008 - < app/backend/Dockerfile
+        run: docker run --rm -i hadolint/hadolint:latest-debian hadolint --ignore DL3008 - < backend/Dockerfile
       - name: hadolint frontend Dockerfile
-        run: docker run --rm -i hadolint/hadolint:latest-debian hadolint --ignore DL3018 - < app/frontend/Dockerfile
+        run: docker run --rm -i hadolint/hadolint:latest-debian hadolint --ignore DL3018 - < frontend/Dockerfile
       - uses: azure/setup-helm@v4
       - name: helm lint (dev + prod values)
         run: |
@@ -61,7 +61,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
-    defaults: { run: { working-directory: app/backend } }
+    defaults: { run: { working-directory: backend } }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -74,12 +74,28 @@ jobs:
         with:
           name: test-reports-py${{ matrix.python-version }}
           path: |
-            app/backend/junit.xml
-            app/backend/coverage.xml
+            backend/junit.xml
+            backend/coverage.xml
+
+  frontend-build:
+    name: Frontend production build
+    needs: lint
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
 
   build:
     name: Build, scan and push ${{ matrix.component }}
-    needs: test
+    needs: [test, frontend-build]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -104,11 +120,11 @@ jobs:
             APP_VERSION=${{ steps.meta.outputs.sha_tag }}
           cache-from: type=gha,scope=${{ matrix.component }}
           cache-to: type=gha,mode=max,scope=${{ matrix.component }}
-      - name: Trivy image scan (fail on CRITICAL)
+      - name: Trivy image scan (fail on HIGH or CRITICAL)
         uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.sha_tag }}
-          severity: CRITICAL
+          severity: HIGH,CRITICAL
           exit-code: "1"
           ignore-unfixed: true
           format: table
@@ -149,7 +165,7 @@ jobs:
           docker compose up -d --no-build --wait --wait-timeout 120
           docker compose ps
       - name: API smoke test through nginx
-        run: ./scripts/smoke-test.sh http://localhost:3100
+        run: ./scripts/smoke-test.sh http://localhost:3000
       - name: Logs on failure
         if: failure()
         run: docker compose logs
