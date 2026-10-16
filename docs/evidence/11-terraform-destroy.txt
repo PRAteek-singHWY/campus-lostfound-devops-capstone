@@ -1,0 +1,930 @@
+=== Teardown Sat Oct 17 00:38:03 IST 2026 ===
+$ helm uninstall lostfound -n lostfound   # removes the Service type=LoadBalancer (ELB) and the EBS volume first
+release "lostfound" uninstalled
+persistentvolumeclaim "data-lostfound-db-0" deleted from lostfound namespace
+waiting for the ELB to disappear...
+ELBs remaining: 0
+
+$ terraform destroy -auto-approve
+data.aws_iam_policy_document.assume_ec2: Reading...
+aws_vpc.main: Refreshing state... [id=vpc-0bbbc3d0dddd34583]
+data.aws_availability_zones.available: Reading...
+aws_iam_role.eks_cluster[0]: Refreshing state... [id=lostfound-dev-eks-cluster-role]
+aws_iam_role.eks_nodes[0]: Refreshing state... [id=lostfound-dev-eks-node-role]
+data.aws_iam_policy_document.assume_ec2: Read complete after 0s [id=2851119427]
+aws_iam_role.app: Refreshing state... [id=lostfound-dev-app-role]
+data.aws_availability_zones.available: Read complete after 2s [id=ap-southeast-2]
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"]: Refreshing state... [id=lostfound-dev-eks-node-role-20261016175505658800000002]
+aws_iam_role_policy_attachment.eks_cluster[0]: Refreshing state... [id=lostfound-dev-eks-cluster-role-20261016175505522000000001]
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"]: Refreshing state... [id=lostfound-dev-eks-node-role-20261016175506135700000005]
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"]: Refreshing state... [id=lostfound-dev-eks-node-role-20261016175505730600000003]
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"]: Refreshing state... [id=lostfound-dev-eks-node-role-20261016180414409600000001]
+aws_iam_role_policy_attachment.ssm: Refreshing state... [id=lostfound-dev-app-role-20261016175506033500000004]
+aws_iam_instance_profile.app: Refreshing state... [id=lostfound-dev-app-profile]
+aws_security_group.eks_cluster[0]: Refreshing state... [id=sg-058ef224aad2ab950]
+aws_internet_gateway.igw: Refreshing state... [id=igw-0364de9bf2cd77241]
+aws_subnet.public[0]: Refreshing state... [id=subnet-0f143d9dd56c5ac29]
+aws_subnet.public[1]: Refreshing state... [id=subnet-0cc46c521a0ff79e5]
+aws_security_group.app: Refreshing state... [id=sg-0d95e32539dd3aff8]
+aws_route_table.public: Refreshing state... [id=rtb-0fb89c1324f517610]
+aws_route_table_association.public[1]: Refreshing state... [id=rtbassoc-0387629a08ac99811]
+aws_route_table_association.public[0]: Refreshing state... [id=rtbassoc-0eb9566c612dd309f]
+aws_eks_cluster.main[0]: Refreshing state... [id=lostfound-dev-eks]
+aws_vpc_security_group_ingress_rule.ssh: Refreshing state... [id=sgr-02bb4b57c347e70ae]
+aws_vpc_security_group_egress_rule.all: Refreshing state... [id=sgr-00566b76c18a94cf0]
+aws_vpc_security_group_ingress_rule.http: Refreshing state... [id=sgr-0d467b1e9027c6ef4]
+aws_eks_node_group.main[0]: Refreshing state... [id=lostfound-dev-eks:lostfound-dev-workers]
+aws_eks_addon.metrics_server[0]: Refreshing state... [id=lostfound-dev-eks:metrics-server]
+aws_eks_addon.ebs_csi[0]: Refreshing state... [id=lostfound-dev-eks:aws-ebs-csi-driver]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # aws_eks_addon.ebs_csi[0] will be destroyed
+  - resource "aws_eks_addon" "ebs_csi" {
+      - addon_name                  = "aws-ebs-csi-driver" -> null
+      - addon_version               = "v1.67.0-eksbuild.1" -> null
+      - arn                         = "arn:aws:eks:ap-southeast-2:852982060028:addon/lostfound-dev-eks/aws-ebs-csi-driver/c4d0a301-a305-ebb5-8579-dd971db18402" -> null
+      - cluster_name                = "lostfound-dev-eks" -> null
+      - created_at                  = "2026-10-16T18:39:42Z" -> null
+      - id                          = "lostfound-dev-eks:aws-ebs-csi-driver" -> null
+      - modified_at                 = "2026-10-16T19:03:34Z" -> null
+      - resolve_conflicts_on_create = "OVERWRITE" -> null
+      - tags                        = {} -> null
+      - tags_all                    = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # aws_eks_addon.metrics_server[0] will be destroyed
+  - resource "aws_eks_addon" "metrics_server" {
+      - addon_name                  = "metrics-server" -> null
+      - addon_version               = "v0.8.1-eksbuild.21" -> null
+      - arn                         = "arn:aws:eks:ap-southeast-2:852982060028:addon/lostfound-dev-eks/metrics-server/74d0a301-a305-7e14-bf1e-7ad79f7aeecd" -> null
+      - cluster_name                = "lostfound-dev-eks" -> null
+      - created_at                  = "2026-10-16T18:39:42Z" -> null
+      - id                          = "lostfound-dev-eks:metrics-server" -> null
+      - modified_at                 = "2026-10-16T18:40:25Z" -> null
+      - resolve_conflicts_on_create = "OVERWRITE" -> null
+      - tags                        = {} -> null
+      - tags_all                    = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # aws_eks_cluster.main[0] will be destroyed
+  - resource "aws_eks_cluster" "main" {
+      - arn                           = "arn:aws:eks:ap-southeast-2:852982060028:cluster/lostfound-dev-eks" -> null
+      - bootstrap_self_managed_addons = true -> null
+      - certificate_authority         = [
+          - {
+              - data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNakNDQWhxZ0F3SUJBZ0lSQVArZDlldlRKS2dnbXhzM1g2L1hRSFF3RFFZSktvWklodmNOQVFFTEJRQXcKSnpFUU1BNEdBMVVFQ2hNSFFWZFRJRVZMVXpFVE1CRUdBMVVFQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TmpFdwpNVFl4TnpVMk1EUmFGdzB6TVRFd01UVXhOelUyTURSYU1DY3hFREFPQmdOVkJBb1RCMEZYVXlCRlMxTXhFekFSCkJnTlZCQU1UQ210MVltVnlibVYwWlhNd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUIKQVFETnYraHcrWFd1dllJTzE5QjVsM0N3VExyNGdZOFF3Wk4xT3h2cVdDYm5xSWJYemJkcFNhdXVUSTFyVFJ5YQptNWtBVDNvVHR0QTZWa2JLREt0UUhaT05IWERKai83cUlIOUZnNzdWZXU2SXppem9sOS9NWEU0bzNNamx3c0ttCkJ2ZHRqWXRiQzE1R3pBeGdUY0duajlhd3lsSm1SNlk4Sm5JMW5YQklPRkhwdmVIWTkzQ21jczFpdk9tVVk0SnEKWTJ3eit2T1l3RDlKcDUraWx3clgxL0RRL2hCQndJRnFrMzBUMjBYL0NSMHFFQXRLS1FBT09PMHNWZjE1UVlaVApVaHNWZGpZVGh4MW1DenVaNnF4QllSYzR1OXg1WWs4YXVzYi9BRzhIc01CRFFEeFdrem1YNDEySXZkQTVJdFVBClA0aU9uYTZwUlhnTVRIaFQvZFIwTGRWOUFnTUJBQUdqV1RCWE1BNEdBMVVkRHdFQi93UUVBd0lDcERBUEJnTlYKSFJNQkFmOEVCVEFEQVFIL01CMEdBMVVkRGdRV0JCVE5JdVpCbzU5cDBpNVBSWXhpY3krbXZ4MTFYekFWQmdOVgpIUkVFRGpBTWdncHJkV0psY201bGRHVnpNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUNudEJoc1A5N25VTUVVCnFrYzl2Z09MeG1obFlSNkxDK3JRUDErVGpMVzF2V3ZHc2dTTFIvRmhOd3QzRWFQeGMvam1RcXpiZkduSVhhaWgKT3F5SXgycUlMWnB5SVlENHpnVWRNYkNkQXFaaXA0RjBUbTlOK01wVWFOOWZ1K05SNENKMUNWTjdFMktEL1h2WgpwOEFOVVVBYitzalVDWlNBa08xTHBXam5Jc0tNVjBvN2ZGbUlwVC9RVDlxWWJIb0pmcHZkUDZhdHpwTGdxTk1KCjVSdWoyaEEyQUR6aDRXcUl3RjhkVjZDbkMxRytSWm5XMFZ1a21nSy9PL1pNMTU1VUEydzB0SXNDeTJtZ2NuMFgKRzkyMXFoalpzdUhXdTlGa3I2bmVldVBCSVFHNld0R1crOFprU3g5UWYzbjhITmpiYUVuUkc1TmV3ZXFHMUJqcQpoSi9GbWw4MwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
+            },
+        ] -> null
+      - created_at                    = "2026-10-16T17:55:42Z" -> null
+      - enabled_cluster_log_types     = [] -> null
+      - endpoint                      = "https://C5FB0F2E5A586D679961E8513E84E55F.gr7.ap-southeast-2.eks.amazonaws.com" -> null
+      - id                            = "lostfound-dev-eks" -> null
+      - identity                      = [
+          - {
+              - oidc = [
+                  - {
+                      - issuer = "https://oidc.eks.ap-southeast-2.amazonaws.com/id/C5FB0F2E5A586D679961E8513E84E55F"
+                    },
+                ]
+            },
+        ] -> null
+      - name                          = "lostfound-dev-eks" -> null
+      - platform_version              = "eks.71" -> null
+      - role_arn                      = "arn:aws:iam::852982060028:role/lostfound-dev-eks-cluster-role" -> null
+      - status                        = "ACTIVE" -> null
+      - tags                          = {
+          - "Name" = "lostfound-dev-eks"
+        } -> null
+      - tags_all                      = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "lostfound-dev-eks"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - version                       = "1.31" -> null
+
+      - access_config {
+          - authentication_mode                         = "API_AND_CONFIG_MAP" -> null
+          - bootstrap_cluster_creator_admin_permissions = true -> null
+        }
+
+      - kubernetes_network_config {
+          - ip_family         = "ipv4" -> null
+          - service_ipv4_cidr = "172.20.0.0/16" -> null
+            # (1 unchanged attribute hidden)
+
+          - elastic_load_balancing {
+              - enabled = false -> null
+            }
+        }
+
+      - upgrade_policy {
+          - support_type = "EXTENDED" -> null
+        }
+
+      - vpc_config {
+          - cluster_security_group_id = "sg-0f58cf93aa7734c0d" -> null
+          - endpoint_private_access   = false -> null
+          - endpoint_public_access    = true -> null
+          - public_access_cidrs       = [
+              - "0.0.0.0/0",
+            ] -> null
+          - security_group_ids        = [
+              - "sg-058ef224aad2ab950",
+            ] -> null
+          - subnet_ids                = [
+              - "subnet-0cc46c521a0ff79e5",
+              - "subnet-0f143d9dd56c5ac29",
+            ] -> null
+          - vpc_id                    = "vpc-0bbbc3d0dddd34583" -> null
+        }
+    }
+
+  # aws_eks_node_group.main[0] will be destroyed
+  - resource "aws_eks_node_group" "main" {
+      - ami_type               = "AL2023_x86_64_STANDARD" -> null
+      - arn                    = "arn:aws:eks:ap-southeast-2:852982060028:nodegroup/lostfound-dev-eks/lostfound-dev-workers/02d0a301-1593-b748-41ea-24b0d5025a16" -> null
+      - capacity_type          = "ON_DEMAND" -> null
+      - cluster_name           = "lostfound-dev-eks" -> null
+      - disk_size              = 20 -> null
+      - id                     = "lostfound-dev-eks:lostfound-dev-workers" -> null
+      - instance_types         = [
+          - "t3.small",
+        ] -> null
+      - labels                 = {} -> null
+      - node_group_name        = "lostfound-dev-workers" -> null
+      - node_role_arn          = "arn:aws:iam::852982060028:role/lostfound-dev-eks-node-role" -> null
+      - release_version        = "1.31.14-20261012" -> null
+      - resources              = [
+          - {
+              - autoscaling_groups              = [
+                  - {
+                      - name = "eks-lostfound-dev-workers-02d0a301-1593-b748-41ea-24b0d5025a16"
+                    },
+                ]
+                # (1 unchanged attribute hidden)
+            },
+        ] -> null
+      - status                 = "ACTIVE" -> null
+      - subnet_ids             = [
+          - "subnet-0cc46c521a0ff79e5",
+          - "subnet-0f143d9dd56c5ac29",
+        ] -> null
+      - tags                   = {
+          - "Name" = "lostfound-dev-workers"
+        } -> null
+      - tags_all               = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "lostfound-dev-workers"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - version                = "1.31" -> null
+        # (1 unchanged attribute hidden)
+
+      - scaling_config {
+          - desired_size = 2 -> null
+          - max_size     = 3 -> null
+          - min_size     = 1 -> null
+        }
+
+      - update_config {
+          - max_unavailable            = 1 -> null
+          - max_unavailable_percentage = 0 -> null
+        }
+    }
+
+  # aws_iam_instance_profile.app will be destroyed
+  - resource "aws_iam_instance_profile" "app" {
+      - arn         = "arn:aws:iam::852982060028:instance-profile/lostfound-dev-app-profile" -> null
+      - create_date = "2026-10-16T17:55:05Z" -> null
+      - id          = "lostfound-dev-app-profile" -> null
+      - name        = "lostfound-dev-app-profile" -> null
+      - path        = "/" -> null
+      - role        = "lostfound-dev-app-role" -> null
+      - tags        = {} -> null
+      - tags_all    = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - unique_id   = "AIPA4NGNRKP6FARLLXJOD" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_iam_role.app will be destroyed
+  - resource "aws_iam_role" "app" {
+      - arn                   = "arn:aws:iam::852982060028:role/lostfound-dev-app-role" -> null
+      - assume_role_policy    = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "sts:AssumeRole"
+                      - Effect    = "Allow"
+                      - Principal = {
+                          - Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+      - create_date           = "2026-10-16T17:55:04Z" -> null
+      - force_detach_policies = false -> null
+      - id                    = "lostfound-dev-app-role" -> null
+      - managed_policy_arns   = [
+          - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+        ] -> null
+      - max_session_duration  = 3600 -> null
+      - name                  = "lostfound-dev-app-role" -> null
+      - path                  = "/" -> null
+      - tags                  = {} -> null
+      - tags_all              = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - unique_id             = "AROA4NGNRKP6H5F3ZMOC4" -> null
+        # (3 unchanged attributes hidden)
+    }
+
+  # aws_iam_role.eks_cluster[0] will be destroyed
+  - resource "aws_iam_role" "eks_cluster" {
+      - arn                   = "arn:aws:iam::852982060028:role/lostfound-dev-eks-cluster-role" -> null
+      - assume_role_policy    = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "sts:AssumeRole"
+                      - Effect    = "Allow"
+                      - Principal = {
+                          - Service = "eks.amazonaws.com"
+                        }
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+      - create_date           = "2026-10-16T17:55:04Z" -> null
+      - force_detach_policies = false -> null
+      - id                    = "lostfound-dev-eks-cluster-role" -> null
+      - managed_policy_arns   = [
+          - "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
+        ] -> null
+      - max_session_duration  = 3600 -> null
+      - name                  = "lostfound-dev-eks-cluster-role" -> null
+      - path                  = "/" -> null
+      - tags                  = {} -> null
+      - tags_all              = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - unique_id             = "AROA4NGNRKP6BTD2FTQGD" -> null
+        # (3 unchanged attributes hidden)
+    }
+
+  # aws_iam_role.eks_nodes[0] will be destroyed
+  - resource "aws_iam_role" "eks_nodes" {
+      - arn                   = "arn:aws:iam::852982060028:role/lostfound-dev-eks-node-role" -> null
+      - assume_role_policy    = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "sts:AssumeRole"
+                      - Effect    = "Allow"
+                      - Principal = {
+                          - Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+      - create_date           = "2026-10-16T17:55:03Z" -> null
+      - force_detach_policies = false -> null
+      - id                    = "lostfound-dev-eks-node-role" -> null
+      - managed_policy_arns   = [
+          - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+          - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+          - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+          - "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
+        ] -> null
+      - max_session_duration  = 3600 -> null
+      - name                  = "lostfound-dev-eks-node-role" -> null
+      - path                  = "/" -> null
+      - tags                  = {} -> null
+      - tags_all              = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - unique_id             = "AROA4NGNRKP6PCYZ4AKVK" -> null
+        # (3 unchanged attributes hidden)
+    }
+
+  # aws_iam_role_policy_attachment.eks_cluster[0] will be destroyed
+  - resource "aws_iam_role_policy_attachment" "eks_cluster" {
+      - id         = "lostfound-dev-eks-cluster-role-20261016175505522000000001" -> null
+      - policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy" -> null
+      - role       = "lostfound-dev-eks-cluster-role" -> null
+    }
+
+  # aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"] will be destroyed
+  - resource "aws_iam_role_policy_attachment" "eks_nodes" {
+      - id         = "lostfound-dev-eks-node-role-20261016175505658800000002" -> null
+      - policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly" -> null
+      - role       = "lostfound-dev-eks-node-role" -> null
+    }
+
+  # aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"] will be destroyed
+  - resource "aws_iam_role_policy_attachment" "eks_nodes" {
+      - id         = "lostfound-dev-eks-node-role-20261016175506135700000005" -> null
+      - policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy" -> null
+      - role       = "lostfound-dev-eks-node-role" -> null
+    }
+
+  # aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"] will be destroyed
+  - resource "aws_iam_role_policy_attachment" "eks_nodes" {
+      - id         = "lostfound-dev-eks-node-role-20261016175505730600000003" -> null
+      - policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy" -> null
+      - role       = "lostfound-dev-eks-node-role" -> null
+    }
+
+  # aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"] will be destroyed
+  - resource "aws_iam_role_policy_attachment" "eks_nodes" {
+      - id         = "lostfound-dev-eks-node-role-20261016180414409600000001" -> null
+      - policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy" -> null
+      - role       = "lostfound-dev-eks-node-role" -> null
+    }
+
+  # aws_iam_role_policy_attachment.ssm will be destroyed
+  - resource "aws_iam_role_policy_attachment" "ssm" {
+      - id         = "lostfound-dev-app-role-20261016175506033500000004" -> null
+      - policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore" -> null
+      - role       = "lostfound-dev-app-role" -> null
+    }
+
+  # aws_internet_gateway.igw will be destroyed
+  - resource "aws_internet_gateway" "igw" {
+      - arn      = "arn:aws:ec2:ap-southeast-2:852982060028:internet-gateway/igw-0364de9bf2cd77241" -> null
+      - id       = "igw-0364de9bf2cd77241" -> null
+      - owner_id = "852982060028" -> null
+      - tags     = {
+          - "Name" = "lostfound-dev-igw"
+        } -> null
+      - tags_all = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "lostfound-dev-igw"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - vpc_id   = "vpc-0bbbc3d0dddd34583" -> null
+    }
+
+  # aws_route_table.public will be destroyed
+  - resource "aws_route_table" "public" {
+      - arn              = "arn:aws:ec2:ap-southeast-2:852982060028:route-table/rtb-0fb89c1324f517610" -> null
+      - id               = "rtb-0fb89c1324f517610" -> null
+      - owner_id         = "852982060028" -> null
+      - propagating_vgws = [] -> null
+      - route            = [
+          - {
+              - cidr_block                 = "0.0.0.0/0"
+              - gateway_id                 = "igw-0364de9bf2cd77241"
+                # (11 unchanged attributes hidden)
+            },
+        ] -> null
+      - tags             = {
+          - "Name" = "lostfound-dev-public-rt"
+        } -> null
+      - tags_all         = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "lostfound-dev-public-rt"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - vpc_id           = "vpc-0bbbc3d0dddd34583" -> null
+    }
+
+  # aws_route_table_association.public[0] will be destroyed
+  - resource "aws_route_table_association" "public" {
+      - id             = "rtbassoc-0eb9566c612dd309f" -> null
+      - route_table_id = "rtb-0fb89c1324f517610" -> null
+      - subnet_id      = "subnet-0f143d9dd56c5ac29" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_route_table_association.public[1] will be destroyed
+  - resource "aws_route_table_association" "public" {
+      - id             = "rtbassoc-0387629a08ac99811" -> null
+      - route_table_id = "rtb-0fb89c1324f517610" -> null
+      - subnet_id      = "subnet-0cc46c521a0ff79e5" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_security_group.app will be destroyed
+  - resource "aws_security_group" "app" {
+      - arn                    = "arn:aws:ec2:ap-southeast-2:852982060028:security-group/sg-0d95e32539dd3aff8" -> null
+      - description            = "Lost & Found application host" -> null
+      - egress                 = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "Outbound to pull images and packages"
+              - from_port        = 0
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "-1"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 0
+            },
+        ] -> null
+      - id                     = "sg-0d95e32539dd3aff8" -> null
+      - ingress                = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "HTTP from the internet (nginx)"
+              - from_port        = 80
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 80
+            },
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "SSH from the admin range only"
+              - from_port        = 22
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 22
+            },
+        ] -> null
+      - name                   = "lostfound-dev-app-sg" -> null
+      - owner_id               = "852982060028" -> null
+      - revoke_rules_on_delete = false -> null
+      - tags                   = {
+          - "Name" = "lostfound-dev-app-sg"
+        } -> null
+      - tags_all               = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "lostfound-dev-app-sg"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - vpc_id                 = "vpc-0bbbc3d0dddd34583" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_security_group.eks_cluster[0] will be destroyed
+  - resource "aws_security_group" "eks_cluster" {
+      - arn                    = "arn:aws:ec2:ap-southeast-2:852982060028:security-group/sg-058ef224aad2ab950" -> null
+      - description            = "EKS control plane" -> null
+      - egress                 = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - from_port        = 0
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "-1"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ] -> null
+      - id                     = "sg-058ef224aad2ab950" -> null
+      - ingress                = [] -> null
+      - name                   = "lostfound-dev-eks-cluster-sg" -> null
+      - owner_id               = "852982060028" -> null
+      - revoke_rules_on_delete = false -> null
+      - tags                   = {
+          - "Name" = "lostfound-dev-eks-cluster-sg"
+        } -> null
+      - tags_all               = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "lostfound-dev-eks-cluster-sg"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - vpc_id                 = "vpc-0bbbc3d0dddd34583" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_subnet.public[0] will be destroyed
+  - resource "aws_subnet" "public" {
+      - arn                                            = "arn:aws:ec2:ap-southeast-2:852982060028:subnet/subnet-0f143d9dd56c5ac29" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "ap-southeast-2a" -> null
+      - availability_zone_id                           = "apse2-az1" -> null
+      - cidr_block                                     = "10.50.0.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-0f143d9dd56c5ac29" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = true -> null
+      - owner_id                                       = "852982060028" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - tags                                           = {
+          - "Name"                   = "lostfound-dev-public-1"
+          - "Tier"                   = "public"
+          - "kubernetes.io/role/elb" = "1"
+        } -> null
+      - tags_all                                       = {
+          - "Environment"            = "dev"
+          - "ManagedBy"              = "terraform"
+          - "Name"                   = "lostfound-dev-public-1"
+          - "Owner"                  = "prateek-singh"
+          - "Project"                = "lostfound"
+          - "Tier"                   = "public"
+          - "kubernetes.io/role/elb" = "1"
+        } -> null
+      - vpc_id                                         = "vpc-0bbbc3d0dddd34583" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_subnet.public[1] will be destroyed
+  - resource "aws_subnet" "public" {
+      - arn                                            = "arn:aws:ec2:ap-southeast-2:852982060028:subnet/subnet-0cc46c521a0ff79e5" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "ap-southeast-2b" -> null
+      - availability_zone_id                           = "apse2-az3" -> null
+      - cidr_block                                     = "10.50.1.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-0cc46c521a0ff79e5" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = true -> null
+      - owner_id                                       = "852982060028" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - tags                                           = {
+          - "Name"                   = "lostfound-dev-public-2"
+          - "Tier"                   = "public"
+          - "kubernetes.io/role/elb" = "1"
+        } -> null
+      - tags_all                                       = {
+          - "Environment"            = "dev"
+          - "ManagedBy"              = "terraform"
+          - "Name"                   = "lostfound-dev-public-2"
+          - "Owner"                  = "prateek-singh"
+          - "Project"                = "lostfound"
+          - "Tier"                   = "public"
+          - "kubernetes.io/role/elb" = "1"
+        } -> null
+      - vpc_id                                         = "vpc-0bbbc3d0dddd34583" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_vpc.main will be destroyed
+  - resource "aws_vpc" "main" {
+      - arn                                  = "arn:aws:ec2:ap-southeast-2:852982060028:vpc/vpc-0bbbc3d0dddd34583" -> null
+      - assign_generated_ipv6_cidr_block     = false -> null
+      - cidr_block                           = "10.50.0.0/16" -> null
+      - default_network_acl_id               = "acl-0cc560a16cc5e4209" -> null
+      - default_route_table_id               = "rtb-0d3887ade521527b1" -> null
+      - default_security_group_id            = "sg-06ba7b97308305ddc" -> null
+      - dhcp_options_id                      = "dopt-0a17cc4462993fd14" -> null
+      - enable_dns_hostnames                 = true -> null
+      - enable_dns_support                   = true -> null
+      - enable_network_address_usage_metrics = false -> null
+      - id                                   = "vpc-0bbbc3d0dddd34583" -> null
+      - instance_tenancy                     = "default" -> null
+      - ipv6_netmask_length                  = 0 -> null
+      - main_route_table_id                  = "rtb-0d3887ade521527b1" -> null
+      - owner_id                             = "852982060028" -> null
+      - tags                                 = {
+          - "Name" = "lostfound-dev-vpc"
+        } -> null
+      - tags_all                             = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "lostfound-dev-vpc"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_vpc_security_group_egress_rule.all will be destroyed
+  - resource "aws_vpc_security_group_egress_rule" "all" {
+      - arn                    = "arn:aws:ec2:ap-southeast-2:852982060028:security-group-rule/sgr-00566b76c18a94cf0" -> null
+      - cidr_ipv4              = "0.0.0.0/0" -> null
+      - description            = "Outbound to pull images and packages" -> null
+      - id                     = "sgr-00566b76c18a94cf0" -> null
+      - ip_protocol            = "-1" -> null
+      - security_group_id      = "sg-0d95e32539dd3aff8" -> null
+      - security_group_rule_id = "sgr-00566b76c18a94cf0" -> null
+      - tags_all               = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+    }
+
+  # aws_vpc_security_group_ingress_rule.http will be destroyed
+  - resource "aws_vpc_security_group_ingress_rule" "http" {
+      - arn                    = "arn:aws:ec2:ap-southeast-2:852982060028:security-group-rule/sgr-0d467b1e9027c6ef4" -> null
+      - cidr_ipv4              = "0.0.0.0/0" -> null
+      - description            = "HTTP from the internet (nginx)" -> null
+      - from_port              = 80 -> null
+      - id                     = "sgr-0d467b1e9027c6ef4" -> null
+      - ip_protocol            = "tcp" -> null
+      - security_group_id      = "sg-0d95e32539dd3aff8" -> null
+      - security_group_rule_id = "sgr-0d467b1e9027c6ef4" -> null
+      - tags_all               = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - to_port                = 80 -> null
+    }
+
+  # aws_vpc_security_group_ingress_rule.ssh will be destroyed
+  - resource "aws_vpc_security_group_ingress_rule" "ssh" {
+      - arn                    = "arn:aws:ec2:ap-southeast-2:852982060028:security-group-rule/sgr-02bb4b57c347e70ae" -> null
+      - cidr_ipv4              = "0.0.0.0/0" -> null
+      - description            = "SSH from the admin range only" -> null
+      - from_port              = 22 -> null
+      - id                     = "sgr-02bb4b57c347e70ae" -> null
+      - ip_protocol            = "tcp" -> null
+      - security_group_id      = "sg-0d95e32539dd3aff8" -> null
+      - security_group_rule_id = "sgr-02bb4b57c347e70ae" -> null
+      - tags_all               = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Owner"       = "prateek-singh"
+          - "Project"     = "lostfound"
+        } -> null
+      - to_port                = 22 -> null
+    }
+
+Plan: 0 to add, 0 to change, 26 to destroy.
+
+Changes to Outputs:
+  - configure_kubectl    = "aws eks update-kubeconfig --region ap-southeast-2 --name lostfound-dev-eks --profile capstone" -> null
+  - eks_cluster_endpoint = "https://C5FB0F2E5A586D679961E8513E84E55F.gr7.ap-southeast-2.eks.amazonaws.com" -> null
+  - eks_cluster_name     = "lostfound-dev-eks" -> null
+  - public_subnet_ids    = [
+      - "subnet-0f143d9dd56c5ac29",
+      - "subnet-0cc46c521a0ff79e5",
+    ] -> null
+  - security_group_id    = "sg-0d95e32539dd3aff8" -> null
+  - vpc_id               = "vpc-0bbbc3d0dddd34583" -> null
+aws_vpc_security_group_ingress_rule.ssh: Destroying... [id=sgr-02bb4b57c347e70ae]
+aws_iam_role_policy_attachment.ssm: Destroying... [id=lostfound-dev-app-role-20261016175506033500000004]
+aws_route_table_association.public[1]: Destroying... [id=rtbassoc-0387629a08ac99811]
+aws_iam_instance_profile.app: Destroying... [id=lostfound-dev-app-profile]
+aws_route_table_association.public[0]: Destroying... [id=rtbassoc-0eb9566c612dd309f]
+aws_eks_addon.metrics_server[0]: Destroying... [id=lostfound-dev-eks:metrics-server]
+aws_vpc_security_group_egress_rule.all: Destroying... [id=sgr-00566b76c18a94cf0]
+aws_eks_addon.ebs_csi[0]: Destroying... [id=lostfound-dev-eks:aws-ebs-csi-driver]
+aws_vpc_security_group_ingress_rule.http: Destroying... [id=sgr-0d467b1e9027c6ef4]
+aws_iam_role_policy_attachment.ssm: Destruction complete after 1s
+aws_iam_instance_profile.app: Destruction complete after 2s
+aws_iam_role.app: Destroying... [id=lostfound-dev-app-role]
+aws_vpc_security_group_ingress_rule.http: Destruction complete after 2s
+aws_vpc_security_group_ingress_rule.ssh: Destruction complete after 2s
+aws_vpc_security_group_egress_rule.all: Destruction complete after 2s
+aws_security_group.app: Destroying... [id=sg-0d95e32539dd3aff8]
+aws_route_table_association.public[0]: Destruction complete after 2s
+aws_iam_role.app: Destruction complete after 0s
+aws_route_table_association.public[1]: Destruction complete after 3s
+aws_route_table.public: Destroying... [id=rtb-0fb89c1324f517610]
+aws_security_group.app: Destruction complete after 2s
+aws_route_table.public: Destruction complete after 2s
+aws_internet_gateway.igw: Destroying... [id=igw-0364de9bf2cd77241]
+aws_eks_addon.metrics_server[0]: Destruction complete after 5s
+aws_eks_addon.ebs_csi[0]: Still destroying... [id=lostfound-dev-eks:aws-ebs-csi-driver, 00m10s elapsed]
+aws_eks_addon.ebs_csi[0]: Destruction complete after 11s
+aws_eks_node_group.main[0]: Destroying... [id=lostfound-dev-eks:lostfound-dev-workers]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 00m10s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 00m10s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 00m20s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 00m20s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 00m30s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 00m30s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 00m40s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 00m40s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 00m50s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 00m50s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 01m00s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 01m00s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 01m10s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 01m10s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 01m20s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 01m20s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 01m30s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 01m30s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 01m40s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 01m40s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 01m50s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 01m50s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 02m00s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 02m00s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 02m10s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 02m10s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 02m20s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 02m20s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 02m30s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 02m30s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 02m40s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 02m40s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 02m50s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 02m50s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 03m00s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 03m00s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 03m10s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 03m10s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 03m20s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 03m20s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 03m30s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 03m30s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 03m40s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 03m40s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 03m50s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 03m50s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 04m00s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 04m00s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 04m10s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 04m10s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 04m20s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 04m20s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 04m30s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 04m30s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 04m40s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 04m40s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 04m50s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 04m50s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 05m00s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 05m00s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 05m10s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 05m10s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 05m20s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 05m20s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 05m30s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 05m30s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 05m40s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 05m40s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 05m50s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 05m50s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 06m00s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 06m00s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 06m10s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 06m10s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 06m20s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 06m20s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 06m30s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 06m30s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 06m40s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 06m40s elapsed]
+aws_internet_gateway.igw: Still destroying... [id=igw-0364de9bf2cd77241, 06m50s elapsed]
+aws_internet_gateway.igw: Destruction complete after 6m54s
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 06m50s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 07m00s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 07m10s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 07m20s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 07m30s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 07m40s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 07m50s elapsed]
+aws_eks_node_group.main[0]: Still destroying... [id=lostfound-dev-eks:lostfound-dev-workers, 08m00s elapsed]
+aws_eks_node_group.main[0]: Destruction complete after 8m9s
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"]: Destroying... [id=lostfound-dev-eks-node-role-20261016175506135700000005]
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"]: Destroying... [id=lostfound-dev-eks-node-role-20261016175505730600000003]
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"]: Destroying... [id=lostfound-dev-eks-node-role-20261016180414409600000001]
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"]: Destroying... [id=lostfound-dev-eks-node-role-20261016175505658800000002]
+aws_eks_cluster.main[0]: Destroying... [id=lostfound-dev-eks]
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"]: Destruction complete after 1s
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"]: Destruction complete after 1s
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"]: Destruction complete after 1s
+aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"]: Destruction complete after 1s
+aws_iam_role.eks_nodes[0]: Destroying... [id=lostfound-dev-eks-node-role]
+aws_iam_role.eks_nodes[0]: Destruction complete after 1s
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 00m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 00m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 00m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 00m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 00m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 01m00s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 01m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 01m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 01m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 01m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 01m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 02m00s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 02m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 02m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 02m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 02m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 02m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 03m00s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 03m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 03m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 03m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 03m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 03m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 04m00s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 04m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 04m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 04m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 04m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 04m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 05m00s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 05m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 05m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 05m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 05m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 05m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 06m00s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 06m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 06m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 06m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 06m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 06m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 07m00s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 07m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 07m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 07m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 07m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 07m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 08m00s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 08m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 08m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 08m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 08m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 08m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 09m00s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 09m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 09m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 09m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 09m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 09m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 10m00s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 10m10s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 10m20s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 10m30s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 10m40s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 10m50s elapsed]
+aws_eks_cluster.main[0]: Still destroying... [id=lostfound-dev-eks, 11m00s elapsed]
+aws_eks_cluster.main[0]: Destruction complete after 11m5s
+aws_iam_role_policy_attachment.eks_cluster[0]: Destroying... [id=lostfound-dev-eks-cluster-role-20261016175505522000000001]
+aws_security_group.eks_cluster[0]: Destroying... [id=sg-058ef224aad2ab950]
+aws_subnet.public[1]: Destroying... [id=subnet-0cc46c521a0ff79e5]
+aws_subnet.public[0]: Destroying... [id=subnet-0f143d9dd56c5ac29]
+aws_iam_role_policy_attachment.eks_cluster[0]: Destruction complete after 1s
+aws_iam_role.eks_cluster[0]: Destroying... [id=lostfound-dev-eks-cluster-role]
+aws_iam_role.eks_cluster[0]: Destruction complete after 1s
+aws_subnet.public[1]: Destruction complete after 3s
+aws_subnet.public[0]: Destruction complete after 3s
+aws_security_group.eks_cluster[0]: Destruction complete after 3s
+aws_vpc.main: Destroying... [id=vpc-0bbbc3d0dddd34583]
+aws_vpc.main: Destruction complete after 2s
+
+Destroy complete! Resources: 26 destroyed.
