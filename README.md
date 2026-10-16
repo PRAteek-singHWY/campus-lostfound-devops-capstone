@@ -128,6 +128,10 @@ Evidence (ps, non-root `id`, Alembic log, smoke test):
 | **build** (matrix: backend, frontend) | `docker buildx` with GHA cache → **Trivy** → push to **GHCR** as `ghcr.io/prateek-singhwy/lostfound-<component>:sha-<7 chars>` (plus `latest`) | HIGH/CRITICAL CVE, or push fails |
 | **integration** | `docker compose up` from the images just pushed, then `scripts/smoke-test.sh` | any API check fails |
 
+| | |
+|---|---|
+| ![CI run](docs/screenshots/M5-actions-green-ci-run.jpg) | ![GHCR package](docs/screenshots/M5-ghcr-package-sha-tag.jpg) |
+
 `.github/workflows/cd.yml` runs when CI is green on `main`: creates a kind cluster, installs the
 Prometheus Operator CRDs, `helm upgrade --install` with `image.tag=sha-<commit>`, smoke-tests through
 the frontend Service and prints `helm history`. Image tags are the **commit SHA**, so every
