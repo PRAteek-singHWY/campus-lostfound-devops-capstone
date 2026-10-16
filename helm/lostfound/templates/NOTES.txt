@@ -1,0 +1,10 @@
+Campus Lost & Found ({{ .Values.environment }}) is rolling out in namespace {{ .Release.Namespace }}.
+
+  kubectl -n {{ .Release.Namespace }} get pods,svc,ingress,hpa -l app.kubernetes.io/instance={{ .Release.Name }}
+
+{{- if .Values.ingress.enabled }}
+Add the Ingress host to /etc/hosts (minikube: `minikube ip`) and open:
+  http://{{ .Values.ingress.host }}/
+{{- end }}
+Or port-forward the frontend:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "lostfound.fullname" . }}-frontend 3100:80

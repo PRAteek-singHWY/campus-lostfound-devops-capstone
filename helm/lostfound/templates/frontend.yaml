@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lostfound.fullname" . }}-frontend
+  labels: {{- include "lostfound.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector: {{- include "lostfound.selector" (dict "ctx" . "tier" "frontend") | nindent 4 }}
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lostfound.fullname" . }}-frontend
+  labels: {{- include "lostfound.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels: {{- include "lostfound.selector" (dict "ctx" . "tier" "frontend") | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "lostfound.selector" (dict "ctx" . "tier" "frontend") | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: nginx
+          image: {{ include "lostfound.frontendImage" . | quote }}
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.frontend.port }}
+          env:
+            - name: BACKEND_HOST
+              value: {{ include "lostfound.fullname" . }}-backend
+            - name: BACKEND_PORT
+              value: "8000"
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+          resources: {{- toYaml .Values.frontend.resources | nindent 12 }}

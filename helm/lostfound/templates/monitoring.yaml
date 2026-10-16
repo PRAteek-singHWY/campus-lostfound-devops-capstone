@@ -1,0 +1,66 @@
+{{- if .Values.monitoring.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "lostfound.fullname" . }}-backend
+  labels:
+    {{- include "lostfound.labels" . | nindent 4 }}
+    release: kps          # matched by kube-prometheus-stack's default selector
+spec:
+  selector:
+    matchLabels: {{- include "lostfound.selector" (dict "ctx" . "tier" "backend") | nindent 6 }}
+  namespaceSelector:
+    matchNames: [{{ .Release.Namespace }}]
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval }}
+{{- end }}
+{{- if .Values.monitoring.prometheusRule.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "lostfound.fullname" . }}-rules
+  labels:
+    {{- include "lostfound.labels" . | nindent 4 }}
+    release: kps
+spec:
+  groups:
+    - name: lostfound.rules
+      rules:
+        - alert: LostFoundHigh5xxRate
+          expr: |
+            sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}",status=~"5.."}[2m]))
+              / clamp_min(sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}"}[2m])), 0.001) > 0.05
+          for: 1m
+          labels: { severity: warning, app: lostfound }
+          annotations:
+            summary: "Lost & Found API: more than 5% of requests are failing"
+            description: "5xx ratio {{ "{{" }} $value | humanizePercentage {{ "}}" }} over 2 minutes."
+        - alert: LostFoundHighLatency
+          expr: |
+            histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{namespace="{{ .Release.Namespace }}"}[5m]))) > 0.5
+          for: 2m
+          labels: { severity: warning, app: lostfound }
+          annotations:
+            summary: "Lost & Found API p95 latency above 500 ms"
+        - alert: LostFoundDatabaseDown
+          expr: min(lostfound_db_up{namespace="{{ .Release.Namespace }}"}) == 0
+          for: 1m
+          labels: { severity: critical, app: lostfound }
+          annotations:
+            summary: "Backend cannot reach PostgreSQL"
+        - alert: LostFoundPodRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="{{ .Release.Namespace }}"}[10m]) > 2
+          for: 1m
+          labels: { severity: critical, app: lostfound }
+          annotations:
+            summary: "{{ "{{" }} $labels.pod {{ "}}" }} restarted {{ "{{" }} $value | printf \"%.0f\" {{ "}}" }} times in 10 minutes"
+        - alert: LostFoundPodNotReady
+          expr: kube_pod_status_ready{namespace="{{ .Release.Namespace }}",condition="false"} == 1
+          for: 3m
+          labels: { severity: warning, app: lostfound }
+          annotations:
+            summary: "{{ "{{" }} $labels.pod {{ "}}" }} has not been Ready for 3 minutes"
+{{- end }}

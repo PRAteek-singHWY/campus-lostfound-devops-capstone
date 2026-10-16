@@ -1,0 +1,15 @@
+.env
+node_modules/
+dist/
+__pycache__/
+.pytest_cache/
+.coverage
+coverage.xml
+junit.xml
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars.json
+terraform/tfplan
+*.pem
+.DS_Store

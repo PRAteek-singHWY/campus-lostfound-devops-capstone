@@ -1,0 +1,66 @@
+# Defaults are tuned for a single-node minikube. See values-prod.yaml for the production overlay.
+environment: dev
+imagePullSecrets: []
+
+backend:
+  image:
+    repository: ghcr.io/prateek-singhwy/lostfound-backend
+    tag: ""            # defaults to .Chart.AppVersion
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  port: 8000
+  resources:
+    requests: { cpu: 50m, memory: 96Mi }
+    limits:   { cpu: 250m, memory: 192Mi }
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
+  env:
+    DB_RETRIES: "15"
+    LOG_LEVEL: "info"
+
+frontend:
+  image:
+    repository: ghcr.io/prateek-singhwy/lostfound-frontend
+    tag: ""
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  port: 80
+  resources:
+    requests: { cpu: 10m, memory: 16Mi }
+    limits:   { cpu: 100m, memory: 64Mi }
+
+postgres:
+  image:
+    repository: postgres
+    tag: 16-alpine
+  database: lostfound
+  username: lostfound
+  # Set via --set postgres.password=... or an existing Secret; never commit real passwords.
+  password: lostfound
+  existingSecret: ""
+  storage:
+    size: 1Gi
+    storageClassName: ""      # "" = cluster default (minikube: standard)
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits:   { cpu: 500m, memory: 512Mi }
+
+ingress:
+  enabled: true
+  className: nginx
+  host: lostfound.local
+  annotations: {}
+  tls: []
+
+monitoring:
+  serviceMonitor:
+    enabled: true           # needs the Prometheus Operator CRDs (kube-prometheus-stack)
+    interval: 15s
+  prometheusRule:
+    enabled: true
+
+podDisruptionBudget:
+  enabled: false

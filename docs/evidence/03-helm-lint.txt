@@ -1,0 +1,14 @@
+$ helm lint helm/lostfound && helm template lostfound helm/lostfound | grep ^kind
+==> Linting helm/lostfound
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+   1 kind: ConfigMap
+   2 kind: Deployment
+   1 kind: HorizontalPodAutoscaler
+   1 kind: Ingress
+   1 kind: PrometheusRule
+   1 kind: Secret
+   3 kind: Service
+   1 kind: ServiceMonitor
+   1 kind: StatefulSet

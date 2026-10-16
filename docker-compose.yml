@@ -1,0 +1,74 @@
+# Local development stack: the same three tiers the Helm chart deploys to Kubernetes.
+name: lostfound
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lostfound}
+      POSTGRES_USER: ${POSTGRES_USER:-lostfound}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lostfound}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    networks: [backend-net]
+
+  backend:
+    build:
+      context: ./app/backend
+      args: { APP_VERSION: "${APP_VERSION:-compose}", GIT_SHA: "${GIT_SHA:-local}" }
+    image: ${BACKEND_IMAGE:-lostfound-backend:local}
+    environment:
+      DB_HOST: db
+      DB_NAME: ${POSTGRES_DB:-lostfound}
+      DB_USER: ${POSTGRES_USER:-lostfound}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-lostfound}
+    depends_on:
+      db:
+        condition: service_healthy     # wait for pg_isready, not just "container started"
+    ports:
+      - "8000:8000"                    # direct API + /metrics access for local debugging
+    restart: unless-stopped
+    networks: [backend-net, frontend-net]
+
+  frontend:
+    build: ./app/frontend
+    image: ${FRONTEND_IMAGE:-lostfound-frontend:local}
+    environment:
+      BACKEND_HOST: backend
+      BACKEND_PORT: "8000"
+    ports:
+      - "3100:80"
+    depends_on:
+      backend:
+        condition: service_healthy    # Dockerfile HEALTHCHECK on /api/live
+    restart: unless-stopped
+    networks: [frontend-net]
+
+  # Local observability, same stack as the cluster (Prometheus + Grafana)
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    profiles: [monitoring]
+    volumes:
+      - ./monitoring/prometheus-compose.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9090:9090"]
+    networks: [backend-net]
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    profiles: [monitoring]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: lostfound
+    ports: ["3000:3000"]
+    networks: [backend-net]
+
+volumes:
+  pgdata:
+
+networks:
+  backend-net:      # db is reachable only from the backend
+  frontend-net:

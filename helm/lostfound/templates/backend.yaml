@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lostfound.fullname" . }}-backend
+  labels: {{- include "lostfound.labels" . | nindent 4 }}
+data:
+  DB_HOST: {{ include "lostfound.fullname" . }}-db
+  DB_PORT: "5432"
+  APP_VERSION: {{ .Values.backend.image.tag | default .Chart.AppVersion | quote }}
+  {{- range $k, $v := .Values.backend.env }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lostfound.fullname" . }}-backend
+  labels: {{- include "lostfound.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector: {{- include "lostfound.selector" (dict "ctx" . "tier" "backend") | nindent 4 }}
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lostfound.fullname" . }}-backend
+  labels: {{- include "lostfound.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.backend.autoscaling.enabled }}
+  replicas: {{ .Values.backend.replicaCount }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  selector:
+    matchLabels: {{- include "lostfound.selector" (dict "ctx" . "tier" "backend") | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "lostfound.selector" (dict "ctx" . "tier" "backend") | nindent 8 }}
+      annotations:
+        checksum/config: {{ .Values.backend.env | toYaml | sha256sum | trunc 16 }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: /metrics
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: api
+          image: {{ include "lostfound.backendImage" . | quote }}
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "lostfound.fullname" . }}-backend
+          env:
+            - name: DB_NAME
+              valueFrom: { secretKeyRef: { name: {{ include "lostfound.dbSecretName" . }}, key: POSTGRES_DB } }
+            - name: DB_USER
+              valueFrom: { secretKeyRef: { name: {{ include "lostfound.dbSecretName" . }}, key: POSTGRES_USER } }
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: {{ include "lostfound.dbSecretName" . }}, key: POSTGRES_PASSWORD } }
+          startupProbe:
+            httpGet: { path: /api/live, port: http }
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet: { path: /api/health, port: http }
+            periodSeconds: 5
+            failureThreshold: 2
+          livenessProbe:
+            httpGet: { path: /api/live, port: http }
+            periodSeconds: 10
+          resources: {{- toYaml .Values.backend.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+{{- if .Values.backend.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "lostfound.fullname" . }}-backend
+  labels: {{- include "lostfound.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "lostfound.fullname" . }}-backend
+  minReplicas: {{ .Values.backend.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.backend.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.backend.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- if .Values.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "lostfound.fullname" . }}-backend
+  labels: {{- include "lostfound.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: {{- include "lostfound.selector" (dict "ctx" . "tier" "backend") | nindent 6 }}
+{{- end }}

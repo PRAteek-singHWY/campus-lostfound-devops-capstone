@@ -1,0 +1,157 @@
+# CI: lint -> unit tests -> build both images -> Trivy scan -> compose integration test -> push to GHCR (main only)
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**", "**.md"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: prateek-singhwy
+
+jobs:
+  lint:
+    name: Lint (flake8, hadolint, helm lint, terraform fmt)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install flake8==7.1.1
+      - name: flake8
+        working-directory: app/backend
+        run: flake8 app tests
+      - name: hadolint backend Dockerfile
+        run: docker run --rm -i hadolint/hadolint:latest-debian hadolint --ignore DL3008 - < app/backend/Dockerfile
+      - name: hadolint frontend Dockerfile
+        run: docker run --rm -i hadolint/hadolint:latest-debian hadolint --ignore DL3018 - < app/frontend/Dockerfile
+      - uses: azure/setup-helm@v4
+      - name: helm lint (dev + prod values)
+        run: |
+          helm lint helm/lostfound
+          helm lint helm/lostfound -f helm/lostfound/values-prod.yaml
+          helm template smoke helm/lostfound > /dev/null
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "1.9.8" }
+      - name: terraform fmt + validate
+        working-directory: terraform
+        run: |
+          terraform fmt -check -recursive
+          terraform init -backend=false -input=false
+          terraform validate
+
+  test:
+    name: Unit tests (py${{ matrix.python-version }})
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    defaults: { run: { working-directory: app/backend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ matrix.python-version }}" }
+      - run: pip install -r requirements-dev.txt
+      - name: pytest with 80% coverage gate
+        run: pytest --junitxml=junit.xml --cov-report=xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports-py${{ matrix.python-version }}
+          path: |
+            app/backend/junit.xml
+            app/backend/coverage.xml
+
+  build:
+    name: Build, scan and push ${{ matrix.component }}
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component: [backend, frontend]
+    outputs:
+      sha_tag: ${{ steps.meta.outputs.sha_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: meta
+        run: |
+          echo "sha_tag=sha-$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+          echo "image=${REGISTRY}/${OWNER}/lostfound-${{ matrix.component }}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - name: Build (load locally for scanning)
+        uses: docker/build-push-action@v6
+        with:
+          context: app/${{ matrix.component }}
+          load: true
+          tags: ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.sha_tag }}
+          build-args: |
+            GIT_SHA=${{ steps.meta.outputs.sha_tag }}
+            APP_VERSION=${{ steps.meta.outputs.sha_tag }}
+          cache-from: type=gha,scope=${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+      - name: Trivy image scan (fail on CRITICAL)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.sha_tag }}
+          severity: CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+          format: table
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push sha + latest tags
+        if: github.event_name != 'pull_request'
+        run: |
+          IMG=${{ steps.meta.outputs.image }}
+          docker tag "$IMG:${{ steps.meta.outputs.sha_tag }}" "$IMG:latest"
+          docker push "$IMG:${{ steps.meta.outputs.sha_tag }}"
+          docker push "$IMG:latest"
+          echo "Pushed \`$IMG:${{ steps.meta.outputs.sha_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+  integration:
+    name: Compose integration test
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Start the stack from the images just pushed
+        env:
+          BACKEND_IMAGE: ${{ env.REGISTRY }}/${{ env.OWNER }}/lostfound-backend:${{ needs.build.outputs.sha_tag }}
+          FRONTEND_IMAGE: ${{ env.REGISTRY }}/${{ env.OWNER }}/lostfound-frontend:${{ needs.build.outputs.sha_tag }}
+        run: |
+          docker compose pull db backend frontend
+          docker compose up -d --no-build --wait --wait-timeout 120
+          docker compose ps
+      - name: API smoke test through nginx
+        run: ./scripts/smoke-test.sh http://localhost:3100
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs
+      - if: always()
+        run: docker compose down -v

@@ -1,0 +1,56 @@
+#!/bin/bash
+# Cloud-init for the Lost & Found host: Docker + compose, pull the published images, start the stack.
+set -euxo pipefail
+exec > >(tee /var/log/user-data.log | logger -t user-data) 2>&1
+
+apt-get update -y
+apt-get install -y ca-certificates curl gnupg awscli
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
+apt-get update -y
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+systemctl enable --now docker
+
+mkdir -p /opt/lostfound && cd /opt/lostfound
+cat > .env <<ENV
+POSTGRES_PASSWORD=${db_password}
+BACKEND_IMAGE=ghcr.io/prateek-singhwy/lostfound-backend:${image_tag}
+FRONTEND_IMAGE=ghcr.io/prateek-singhwy/lostfound-frontend:${image_tag}
+ENV
+chmod 600 .env
+
+cat > docker-compose.yml <<'COMPOSE'
+name: lostfound
+services:
+  db:
+    image: postgres:16-alpine
+    environment: { POSTGRES_DB: lostfound, POSTGRES_USER: lostfound, POSTGRES_PASSWORD: $${POSTGRES_PASSWORD} }
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U lostfound -d lostfound"], interval: 5s, timeout: 3s, retries: 10 }
+    restart: unless-stopped
+  backend:
+    image: $${BACKEND_IMAGE}
+    environment: { DB_HOST: db, DB_NAME: lostfound, DB_USER: lostfound, DB_PASSWORD: $${POSTGRES_PASSWORD} }
+    depends_on: { db: { condition: service_healthy } }
+    restart: unless-stopped
+  frontend:
+    image: $${FRONTEND_IMAGE}
+    environment: { BACKEND_HOST: backend, BACKEND_PORT: "8000" }
+    ports: ["80:80"]
+    depends_on: { backend: { condition: service_healthy } }
+    restart: unless-stopped
+volumes:
+  pgdata:
+COMPOSE
+
+docker compose pull
+docker compose up -d
+
+# nightly pg_dump to the backups bucket
+cat > /etc/cron.daily/lostfound-backup <<'CRON'
+#!/bin/bash
+cd /opt/lostfound && docker compose exec -T db pg_dump -U lostfound lostfound | gzip \
+  | aws s3 cp - "s3://${backup_bucket}/$(date +%F).sql.gz" --region ${aws_region}
+CRON
+chmod +x /etc/cron.daily/lostfound-backup

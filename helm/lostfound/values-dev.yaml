@@ -1,0 +1,11 @@
+environment: dev
+backend:
+  replicaCount: 1
+  autoscaling: { enabled: false }
+frontend:
+  replicaCount: 1
+ingress:
+  host: lostfound.local
+monitoring:
+  serviceMonitor: { enabled: false }
+  prometheusRule: { enabled: false }

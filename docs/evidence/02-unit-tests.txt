@@ -1,0 +1,13 @@
+$ cd app/backend && flake8 app tests && pytest
+    return self.router.on_event(event_type)
+
+
+---------- coverage: platform darwin, python 3.13.1-final-0 ----------
+Name              Stmts   Miss  Cover   Missing
+-----------------------------------------------
+app/__init__.py       0      0   100%
+app/main.py         100     16    84%   48-50, 76, 84-104
+-----------------------------------------------
+TOTAL               100     16    84%
+
+Required test coverage of 80% reached. Total coverage: 84.00%

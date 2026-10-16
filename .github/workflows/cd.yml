@@ -1,0 +1,61 @@
+# CD: after CI is green on main, deploy the Helm chart to a throwaway kind cluster and smoke-test it.
+# The same chart + scripts/deploy.sh are what run against minikube locally.
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: cd-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Helm deploy to kind + smoke test
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - id: meta
+        run: echo "sha_tag=sha-$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: helm/kind-action@v1
+        with:
+          cluster_name: lostfound-cd
+      - uses: azure/setup-helm@v4
+      - name: Install Prometheus Operator CRDs (so ServiceMonitor/PrometheusRule apply)
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm install kps prometheus-community/kube-prometheus-stack -n monitoring --create-namespace \
+            --set grafana.enabled=false --set alertmanager.enabled=false --set nodeExporter.enabled=false \
+            --set kubeStateMetrics.enabled=false --set prometheus.enabled=false --wait --timeout 5m
+      - name: helm upgrade --install
+        run: |
+          helm upgrade --install lostfound helm/lostfound -n lostfound --create-namespace \
+            --set backend.image.tag=${{ steps.meta.outputs.sha_tag }} \
+            --set frontend.image.tag=${{ steps.meta.outputs.sha_tag }} \
+            --set backend.autoscaling.enabled=false --set ingress.enabled=false \
+            --wait --timeout 5m
+          kubectl -n lostfound get pods,svc,statefulset -o wide
+      - name: Smoke test through the frontend Service
+        run: |
+          kubectl -n lostfound port-forward svc/lostfound-frontend 3100:80 >/dev/null 2>&1 &
+          sleep 3
+          ./scripts/smoke-test.sh http://localhost:3100
+      - name: Rollout history
+        run: helm -n lostfound history lostfound
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          kubectl -n lostfound get events --sort-by=.lastTimestamp | tail -40
+          kubectl -n lostfound describe pods | tail -80
+          kubectl -n lostfound logs -l app.kubernetes.io/component=backend --tail=100

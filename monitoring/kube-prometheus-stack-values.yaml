@@ -1,0 +1,65 @@
+# kube-prometheus-stack sized for a single-node minikube.
+# helm upgrade --install kps prometheus-community/kube-prometheus-stack -n monitoring --create-namespace -f monitoring/kube-prometheus-stack-values.yaml
+fullnameOverride: kps
+
+# minikube binds these to 127.0.0.1 inside the node; disabled instead of permanently-down targets
+kubeEtcd: { enabled: false }
+kubeControllerManager: { enabled: false }
+kubeScheduler: { enabled: false }
+kubeProxy: { enabled: false }
+defaultRules:
+  rules:
+    etcd: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeProxy: false
+    windows: false
+
+prometheus:
+  prometheusSpec:
+    retention: 24h
+    scrapeInterval: 15s
+    evaluationInterval: 15s
+    # pick up ServiceMonitors / PrometheusRules from every namespace (the app chart ships its own)
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    resources:
+      requests: { cpu: 100m, memory: 400Mi }
+      limits: { memory: 1Gi }
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests: { cpu: 10m, memory: 32Mi }
+  config:
+    route:
+      receiver: "null"
+      group_by: [alertname, namespace]
+      routes:
+        - receiver: lostfound-team
+          matchers: ['app="lostfound"']
+    receivers:
+      - name: "null"
+      - name: lostfound-team
+        # swap for slack_configs / email_configs in a real deployment
+        webhook_configs:
+          - url: http://alert-sink.lostfound.svc.cluster.local/
+            send_resolved: true
+
+grafana:
+  adminPassword: lostfound-grafana
+  defaultDashboardsTimezone: browser
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      searchNamespace: ALL
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+
+nodeExporter:
+  enabled: true
+kubeStateMetrics:
+  enabled: true

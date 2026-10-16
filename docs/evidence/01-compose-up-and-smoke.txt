@@ -1,0 +1,56 @@
+$ docker compose up -d --build --wait && docker compose ps && ./scripts/smoke-test.sh
+ Network lostfound_frontend-net  Created
+ Volume lostfound_pgdata  Creating
+ Volume lostfound_pgdata  Created
+ Container lostfound-db-1  Creating
+ Container lostfound-db-1  Created
+ Container lostfound-backend-1  Creating
+ Container lostfound-backend-1  Created
+ Container lostfound-frontend-1  Creating
+ Container lostfound-frontend-1  Created
+ Container lostfound-db-1  Starting
+ Container lostfound-db-1  Started
+ Container lostfound-db-1  Waiting
+ Container lostfound-db-1  Healthy
+ Container lostfound-backend-1  Starting
+ Container lostfound-backend-1  Started
+ Container lostfound-backend-1  Waiting
+ Container lostfound-backend-1  Healthy
+ Container lostfound-frontend-1  Starting
+ Container lostfound-frontend-1  Started
+ Container lostfound-backend-1  Waiting
+ Container lostfound-frontend-1  Waiting
+ Container lostfound-db-1  Waiting
+ Container lostfound-backend-1  Healthy
+ Container lostfound-db-1  Healthy
+ Container lostfound-frontend-1  Healthy
+=== ps ===
+NAME                   IMAGE                      COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+lostfound-backend-1    lostfound-backend:local    "uvicorn app.main:ap…"   backend    25 seconds ago   Up 21 seconds (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+lostfound-db-1         postgres:16-alpine         "docker-entrypoint.s…"   db         25 seconds ago   Up 24 seconds (healthy)   5432/tcp
+lostfound-frontend-1   lostfound-frontend:local   "/docker-entrypoint.…"   frontend   25 seconds ago   Up 10 seconds (healthy)   0.0.0.0:3100->80/tcp, [::]:3100->80/tcp
+=== smoke ===
+smoke test against http://localhost:3100
+  PASS frontend /healthz
+  PASS React index served
+  PASS backend readiness, db up
+  PASS backend liveness
+  PASS POST /api/items -> id 1
+  PASS GET /api/items lists it
+  PASS PATCH -> returned
+  PASS DELETE -> 204
+  PASS second DELETE -> 404
+  PASS invalid kind -> 422
+all smoke tests passed
+=== metrics sample ===
+http_requests_total{method="GET",path="/api/live",status="200"} 3.0
+http_requests_total{method="GET",path="/api/health",status="200"} 2.0
+http_requests_total{method="POST",path="/api/items",status="201"} 1.0
+http_requests_total{method="GET",path="/api/items",status="200"} 1.0
+http_requests_total{method="PATCH",path="/api/items/{item_id}",status="200"} 1.0
+http_requests_total{method="DELETE",path="/api/items/{item_id}",status="204"} 1.0
+http_requests_total{method="DELETE",path="/api/items/{item_id}",status="404"} 1.0
+http_requests_total{method="POST",path="/api/items",status="422"} 1.0
+http_requests_total{method="GET",path="/api/metrics",status="404"} 1.0
+lostfound_db_up 1.0
+
