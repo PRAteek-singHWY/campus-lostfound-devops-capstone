@@ -1,6 +1,5 @@
 """Unit tests run against an in-memory fake of the psycopg connection: no Postgres needed."""
 import os
-import re
 
 os.environ["SKIP_DB_INIT"] = "1"
 
@@ -73,7 +72,8 @@ class FakeDB:
         if s.startswith("DELETE FROM items"):
             (item_id,) = params
             return FakeCursor([self.items.pop(item_id)] if item_id in self.items else [])
-        raise AssertionError(f"unexpected SQL: {re.sub(r'\\s+', ' ', sql)[:60]}")
+        short = " ".join(sql.split())[:60]
+        raise AssertionError(f"unexpected SQL: {short}")
 
 
 @pytest.fixture
