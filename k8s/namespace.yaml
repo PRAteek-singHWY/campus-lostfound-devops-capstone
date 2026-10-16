@@ -1,0 +1,8 @@
+# Bootstrap: the namespace the Helm release and its ServiceMonitor live in.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lostfound
+  labels:
+    app.kubernetes.io/part-of: lostfound
+    pod-security.kubernetes.io/enforce: baseline

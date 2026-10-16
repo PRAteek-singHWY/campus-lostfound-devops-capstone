@@ -1,9 +1,9 @@
 environment: dev
 backend:
-  replicaCount: 1
+  replicaCount: 2
   autoscaling: { enabled: false }
 frontend:
-  replicaCount: 1
+  replicaCount: 2
 ingress:
   host: lostfound.local
 monitoring:
