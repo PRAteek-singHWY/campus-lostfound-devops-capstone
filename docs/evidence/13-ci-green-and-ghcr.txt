@@ -1,0 +1,27 @@
+GitHub Actions · CI run 38944943156 · success · commit 048697d
+https://github.com/PRAteek-singHWY/campus-lostfound-devops-capstone/actions/runs/38944943156
+
+success	Lint (flake8, hadolint, helm lint, terraform fmt)
+success	Frontend production build
+success	Unit tests (py3.12)
+success	Unit tests (py3.11)
+success	Unit tests (py3.13)
+success	Build, scan and push frontend
+success	Build, scan and push backend
+success	Compose integration test
+
+--- images pushed (from job summaries) ---
+08b87ed99123: Pushed
+0acfc468e23b: Pushed
+15f1c8eb1ab1: Pushed
+26018f2b5e36: Pushed
+29df493baa13: Pushed
+441f54f9f27f: Pushed
+64dcdc2d6518: Pushed
+6ef4bb34c7eb: Pushed
+
+--- GHCR manifests ---
+ghcr.io/prateek-singhwy/lostfound-backend:sha-048697d   200
+ghcr.io/prateek-singhwy/lostfound-backend:latest        200
+ghcr.io/prateek-singhwy/lostfound-frontend:sha-048697d  200
+ghcr.io/prateek-singhwy/lostfound-frontend:latest       200

@@ -35,9 +35,7 @@ jobs:
       - name: Install Prometheus Operator CRDs (so ServiceMonitor/PrometheusRule apply)
         run: |
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm install kps prometheus-community/kube-prometheus-stack -n monitoring --create-namespace \
-            --set grafana.enabled=false --set alertmanager.enabled=false --set nodeExporter.enabled=false \
-            --set kubeStateMetrics.enabled=false --set prometheus.enabled=false --wait --timeout 5m
+          helm install prometheus-operator-crds prometheus-community/prometheus-operator-crds --wait --timeout 3m
       - name: Bootstrap namespace
         run: kubectl apply -f k8s/namespace.yaml
       - name: helm upgrade --install
