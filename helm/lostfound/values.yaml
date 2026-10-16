@@ -43,6 +43,8 @@ postgres:
   # Set via --set postgres.password=... or an existing Secret; never commit real passwords.
   password: lostfound
   existingSecret: ""
+  persistence:
+    enabled: true          # false = emptyDir (data lost on pod restart); only for throwaway demo clusters
   storage:
     size: 1Gi
     storageClassName: ""      # "" = cluster default (minikube: standard)
