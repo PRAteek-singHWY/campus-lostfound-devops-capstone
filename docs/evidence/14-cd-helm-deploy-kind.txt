@@ -1,0 +1,33 @@
+GitHub Actions · CD run 38945869755 · success (Helm deploy to kind + smoke test)
+https://github.com/PRAteek-singHWY/campus-lostfound-devops-capstone/actions/runs/38945869755
+
+NAME: prometheus-operator-crds
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+Release "lostfound" does not exist. Installing it now.
+NAME: lostfound
+NAMESPACE: lostfound
+STATUS: deployed
+REVISION: 1
+NAME                                      READY   STATUS    RESTARTS   AGE   IP            NODE                         NOMINATED NODE   READINESS GATES
+pod/lostfound-backend-544fb85cd7-qrltl    1/1     Running   0          28s   10.244.0.7    lostfound-cd-control-plane   <none>           <none>
+pod/lostfound-backend-544fb85cd7-tmkzt    1/1     Running   0          28s   10.244.0.6    lostfound-cd-control-plane   <none>           <none>
+pod/lostfound-db-0                        1/1     Running   0          28s   10.244.0.10   lostfound-cd-control-plane   <none>           <none>
+pod/lostfound-frontend-7954ff574c-f8fjm   1/1     Running   0          28s   10.244.0.5    lostfound-cd-control-plane   <none>           <none>
+pod/lostfound-frontend-7954ff574c-x6wjg   1/1     Running   0          28s   10.244.0.8    lostfound-cd-control-plane   <none>           <none>
+NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE   SELECTOR
+service/lostfound-backend    ClusterIP   10.96.43.169    <none>        8000/TCP   28s   app.kubernetes.io/component=backend,app.kubernetes.io/instance=lostfound,app.kubernetes.io/name=lostfound
+service/lostfound-db         ClusterIP   None            <none>        5432/TCP   28s   app.kubernetes.io/component=db,app.kubernetes.io/instance=lostfound,app.kubernetes.io/name=lostfound
+service/lostfound-frontend   ClusterIP   10.96.169.158   <none>        80/TCP     28s   app.kubernetes.io/component=frontend,app.kubernetes.io/instance=lostfound,app.kubernetes.io/name=lostfound
+NAME                            READY   AGE   CONTAINERS   IMAGES
+statefulset.apps/lostfound-db   1/1     28s   postgres     postgres:16-alpine
+  PASS frontend /healthz
+  PASS React index served
+  PASS backend readiness, db up
+  PASS backend liveness
+  PASS POST /api/items -> id 1
+  PASS GET /api/items lists it
+  PASS PATCH -> returned
+  PASS DELETE -> 204
+  PASS second DELETE -> 404
