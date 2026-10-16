@@ -72,6 +72,12 @@ class ItemPatch(BaseModel):
     status: str                 # open | returned
 
 
+class ItemUpdate(BaseModel):
+    title: str
+    location: str
+    kind: str = "lost"
+
+
 def conn():
     return psycopg.connect(DB_DSN, row_factory=dict_row, connect_timeout=3)
 
@@ -105,6 +111,7 @@ def init_db():
 
 
 # ---- health ---------------------------------------------------------------
+@app.get("/health", include_in_schema=False)
 @app.get("/api/live")
 def live():
     """Liveness: the process is up. Never touches the database."""
@@ -145,6 +152,32 @@ def create_item(item: ItemIn):
             "INSERT INTO items (title, location, kind) VALUES (%s, %s, %s) "
             "RETURNING id, title, location, kind, status",
             (item.title.strip(), item.location.strip(), item.kind)).fetchone()
+
+
+@app.get("/api/items/{item_id}")
+def get_item(item_id: int):
+    with conn() as c:
+        row = c.execute(
+            "SELECT id, title, location, kind, status FROM items WHERE id = %s",
+            (item_id,)).fetchone()
+    if not row:
+        raise HTTPException(404, "item not found")
+    return row
+
+
+@app.put("/api/items/{item_id}")
+def replace_item(item_id: int, item: ItemUpdate):
+    """Full update of an item's details (status is changed through PATCH)."""
+    if item.kind not in ("lost", "found"):
+        raise HTTPException(422, "kind must be 'lost' or 'found'")
+    with conn() as c:
+        row = c.execute(
+            "UPDATE items SET title = %s, location = %s, kind = %s WHERE id = %s "
+            "RETURNING id, title, location, kind, status",
+            (item.title.strip(), item.location.strip(), item.kind, item_id)).fetchone()
+    if not row:
+        raise HTTPException(404, "item not found")
+    return row
 
 
 @app.patch("/api/items/{item_id}")
