@@ -3,3 +3,7 @@ https://github.com/PRAteek-singHWY/campus-lostfound-devops-capstone/actions/runs
 
 Terraform has been successfully initialized!
 Success! The configuration is valid.
+Plan: 14 to add, 0 to change, 0 to destroy.
+Apply complete! Resources: 14 added, 0 changed, 0 destroyed.
+Plan: 0 to add, 0 to change, 14 to destroy.
+Destroy complete! Resources: 14 destroyed.
