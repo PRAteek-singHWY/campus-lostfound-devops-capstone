@@ -1,15 +1,5 @@
 GitHub Actions · Terraform workflow · run 38941831538 (success)
 https://github.com/PRAteek-singHWY/campus-lostfound-devops-capstone/actions/runs/38941831538
 
-validate	Set up job	2026-10-16T17:43:14.6541653Z Download action repository 'terraform-linters/setup-tflint@v4' (SHA:90f302c255ef959cbfb4bd10581afecdb7ece3e6)
-validate	Run terraform-linters/setup-tflint@v4	﻿2026-10-16T17:44:01.7810813Z ##[group]Run terraform-linters/setup-tflint@v4
-validate	Run terraform-linters/setup-tflint@v4	2026-10-16T17:44:01.7811129Z with:
-validate	Run terraform-linters/setup-tflint@v4	2026-10-16T17:44:01.7811325Z   tflint_version: latest
-validate	Run terraform-linters/setup-tflint@v4	2026-10-16T17:44:01.7814127Z   github_token: ***
-validate	Run terraform-linters/setup-tflint@v4	2026-10-16T17:44:01.7814438Z   tflint_wrapper: false
-validate	Run terraform-linters/setup-tflint@v4	2026-10-16T17:44:01.7814649Z env:
-validate	Run terraform-linters/setup-tflint@v4	2026-10-16T17:44:01.7814963Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/80208039-dfb2-4d50-b27f-f7f546b21ffe
-validate	Run terraform-linters/setup-tflint@v4	2026-10-16T17:44:01.7815342Z ##[endgroup]
-validate	Run terraform-linters/setup-tflint@v4	2026-10-16T17:44:02.4773036Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/86c81eba-a9d2-4c1f-b1e6-9836a62e8f23
-validate	Run tflint --init && tflint	﻿2026-10-16T17:44:02.8310487Z ##[group]Run tflint --init && tflint
-validate	Run tflint --init && tflint	2026-10-16T17:44:02.8310811Z tflint --init && tflint
+Terraform has been successfully initialized!
+Success! The configuration is valid.
