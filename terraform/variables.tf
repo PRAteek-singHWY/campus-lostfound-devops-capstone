@@ -102,7 +102,7 @@ variable "eks_version" {
 variable "eks_node_instance_type" {
   description = "Instance type for the managed node group"
   type        = string
-  default     = "t3.medium"
+  default     = "t3.small"
 }
 
 variable "eks_node_count" {
