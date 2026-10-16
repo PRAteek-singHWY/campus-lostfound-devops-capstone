@@ -77,3 +77,34 @@
 [0m[1maws_eks_cluster.main[0]: Still creating... [04m50s elapsed][0m[0m
 [0m[1maws_eks_cluster.main[0]: Still creating... [05m00s elapsed][0m[0m
 [0m[1maws_eks_cluster.main[0]: Still creating... [05m10s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [05m20s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [05m30s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [05m40s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [05m50s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [06m00s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [06m10s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [06m20s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [06m30s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [06m40s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [06m50s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [07m00s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [07m10s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Still creating... [07m20s elapsed][0m[0m
+[0m[1maws_eks_cluster.main[0]: Creation complete after 7m25s [id=lostfound-dev-eks][0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mattaching IAM Policy (arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicy) to IAM Role (lostfound-dev-eks-node-role): operation error IAM: AttachRolePolicy, https response error StatusCode: 404, RequestID: 6745d73b-d183-47d8-903f-73348e2e72cf, NoSuchEntity: Policy arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicy does not exist or is not attachable.[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  with aws_iam_role_policy_attachment.eks_nodes["arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicy"],
+[31m│[0m [0m  on eks.tf line 72, in resource "aws_iam_role_policy_attachment" "eks_nodes":
+[31m│[0m [0m  72: resource "aws_iam_role_policy_attachment" "eks_nodes" [4m{[0m[0m
+[31m│[0m [0m
+[31m╵[0m[0m
+configure_kubectl = "aws eks update-kubeconfig --region ap-southeast-2 --name lostfound-dev-eks --profile capstone"
+eks_cluster_endpoint = "https://C5FB0F2E5A586D679961E8513E84E55F.gr7.ap-southeast-2.eks.amazonaws.com"
+eks_cluster_name = "lostfound-dev-eks"
+public_subnet_ids = [
+  "subnet-0f143d9dd56c5ac29",
+  "subnet-0cc46c521a0ff79e5",
+]
+security_group_id = "sg-0d95e32539dd3aff8"
+vpc_id = "vpc-0bbbc3d0dddd34583"

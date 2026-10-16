@@ -74,7 +74,7 @@ resource "aws_iam_role_policy_attachment" "eks_nodes" {
     "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
     "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-    "arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicy",
+    "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
   ]) : toset([])
   role       = aws_iam_role.eks_nodes[0].name
   policy_arn = each.value
