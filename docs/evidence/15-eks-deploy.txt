@@ -1,2 +1,49 @@
 === EKS cluster (Terraform-provisioned) ===
 $ kubectl get nodes -o wide
+NAME                                             STATUS   ROLES    AGE   VERSION                INTERNAL-IP   EXTERNAL-IP     OS-IMAGE                        KERNEL-VERSION                    CONTAINER-RUNTIME
+ip-10-50-0-133.ap-southeast-2.compute.internal   Ready    <none>   22m   v1.31.14-eks-b9510e3   10.50.0.133   13.54.155.134   Amazon Linux 2023.12.20261012   6.1.188-233.393.amzn2023.x86_64   containerd://2.3.5+unknown
+ip-10-50-1-28.ap-southeast-2.compute.internal    Ready    <none>   22m   v1.31.14-eks-b9510e3   10.50.1.28    32.236.38.162   Amazon Linux 2023.12.20261012   6.1.188-233.393.amzn2023.x86_64   containerd://2.3.5+unknown
+
+=== Incident: aws-ebs-csi-driver controller CrashLoopBackOff ===
+$ kubectl -n kube-system logs deploy/ebs-csi-controller -c ebs-plugin --tail=2
+Found 2 pods, using pod/ebs-csi-controller-79469b4985-675sf
+E1016 18:56:32.390552       1 driver.go:135] "GRPC error" err="rpc error: code = FailedPrecondition desc = Failed health check (verify network connection and IAM credentials): dry-run EC2 API call fai
+E1016 18:56:32.390500       1 driver.go:135] "GRPC error" err="rpc error: code = FailedPrecondition desc = Failed health check (verify network connection and IAM credentials): dry-run EC2 API call fai
+$ aws ec2 describe-instances ... --query MetadataOptions.HttpPutResponseHopLimit   ->  1
+Root cause: IMDSv2 hop limit 1 on the worker nodes; pods (one extra network hop) cannot fetch the node role credentials, so the CSI controller's EC2 dry-run fails.
+FIX: $ aws ec2 modify-instance-metadata-options --instance-id <id> --http-put-response-hop-limit 2 --http-tokens required
+i-005210d109e56a126 hop limit -> 2
+i-0d03f9c8015d86fdb hop limit -> 2
+$ kubectl -n kube-system get pods -l app=ebs-csi-controller
+NAME                                  READY   STATUS    RESTARTS   AGE
+ebs-csi-controller-79469b4985-562rq   6/6     Running   0          49s
+ebs-csi-controller-79469b4985-vgd9m   6/6     Running   0          48s
+
+namespace/lostfound created
+STATUS: deployed
+REVISION: 1
+
+$ kubectl get pods -n lostfound -o wide
+NAME                                  READY   STATUS    RESTARTS   AGE   IP            NODE                                             NOMINATED NODE   READINESS GATES
+lostfound-backend-667d57d5c7-bnmv5    1/1     Running   0          26s   10.50.1.219   ip-10-50-1-28.ap-southeast-2.compute.internal    <none>           <none>
+lostfound-backend-667d57d5c7-k22fz    1/1     Running   0          42s   10.50.0.117   ip-10-50-0-133.ap-southeast-2.compute.internal   <none>           <none>
+lostfound-db-0                        1/1     Running   0          41s   10.50.1.138   ip-10-50-1-28.ap-southeast-2.compute.internal    <none>           <none>
+lostfound-frontend-74d6c8c96b-98h2q   1/1     Running   0          42s   10.50.0.139   ip-10-50-0-133.ap-southeast-2.compute.internal   <none>           <none>
+lostfound-frontend-74d6c8c96b-tpkhq   1/1     Running   0          42s   10.50.1.90    ip-10-50-1-28.ap-southeast-2.compute.internal    <none>           <none>
+
+$ kubectl get svc -n lostfound
+NAME                 TYPE           CLUSTER-IP      EXTERNAL-IP                                                                   PORT(S)        AGE
+lostfound-backend    ClusterIP      172.20.122.71   <none>                                                                        8000/TCP       45s
+lostfound-db         ClusterIP      None            <none>                                                                        5432/TCP       45s
+lostfound-frontend   LoadBalancer   172.20.31.168   a127029813b7c4ea7aebdfe98ed52745-532677527.ap-southeast-2.elb.amazonaws.com   80:31768/TCP   45s
+
+$ kubectl get pvc,hpa -n lostfound
+NAME                                        STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-lostfound-db-0   Bound    pvc-ec96a90d-31ca-4838-89e6-5752143cb1f1   5Gi        RWO            gp2            <unset>                 46s
+
+NAME                                                    REFERENCE                      TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/lostfound-backend   Deployment/lostfound-backend   cpu: <unknown>/60%   2         4         2          46s
+
+$ helm list -n lostfound
+NAME     	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART          	APP VERSION
+lostfound	lostfound	1       	2026-10-17 00:32:50.203984 +0530 IST	deployed	lostfound-1.0.0	1.0.0      
