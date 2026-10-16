@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
-# Build both images straight into minikube's container runtime and roll them out with Helm.
+# Build both images on the host, load them into minikube's container runtime, roll out with Helm.
 # Usage: ./scripts/deploy.sh [tag] [values-file]
 set -euo pipefail
 TAG="${1:-$(git rev-parse --short=7 HEAD 2>/dev/null || echo local)}"
 VALUES="${2:-helm/lostfound/values-dev.yaml}"
 NS=lostfound
+BACKEND=ghcr.io/prateek-singhwy/lostfound-backend
+FRONTEND=ghcr.io/prateek-singhwy/lostfound-frontend
 cd "$(dirname "$0")/.."
 
-eval "$(minikube docker-env)"
-docker build -t "ghcr.io/prateek-singhwy/lostfound-backend:$TAG" \
-  --build-arg GIT_SHA="$TAG" --build-arg APP_VERSION="$TAG" app/backend
-docker build -t "ghcr.io/prateek-singhwy/lostfound-frontend:$TAG" app/frontend
+docker build -t "$BACKEND:$TAG" --build-arg GIT_SHA="$TAG" --build-arg APP_VERSION="$TAG" backend
+docker build -t "$FRONTEND:$TAG" frontend
+# minikube runs containerd, so images are loaded rather than built inside the node
+minikube image load "$BACKEND:$TAG"
+minikube image load "$FRONTEND:$TAG"
 
 helm upgrade --install lostfound helm/lostfound -n "$NS" --create-namespace -f "$VALUES" \
   --set backend.image.tag="$TAG" --set frontend.image.tag="$TAG" \

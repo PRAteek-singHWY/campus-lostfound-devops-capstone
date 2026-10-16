@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # End-to-end API check through the frontend (nginx -> backend -> postgres).
-# Usage: ./scripts/smoke-test.sh http://localhost:3100
+# Usage: ./scripts/smoke-test.sh http://localhost:3000
 set -euo pipefail
-BASE="${1:-http://localhost:3100}"
+BASE="${1:-http://localhost:3000}"
 J='Content-Type: application/json'
 pass() { printf '  \033[32mPASS\033[0m %s\n' "$1"; }
 fail() { printf '  \033[31mFAIL\033[0m %s\n' "$1"; exit 1; }
