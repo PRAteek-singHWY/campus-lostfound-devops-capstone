@@ -1,0 +1,69 @@
+# Live demo run, minikube (26 Oct 2026): deploy by commit SHA, smoke test, helm rollback, monitoring
+
+$ helm list -n lostfound
+NAME     	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART          	APP VERSION
+lostfound	lostfound	8       	2026-10-26 14:39:17.302872 +0530 IST	deployed	lostfound-1.0.0	1.0.0
+
+$ ./scripts/deploy.sh $(git rev-parse --short=7 HEAD)
+Release "lostfound" has been upgraded. Happy Helming!
+STATUS: deployed
+REVISION: 9
+pod/lostfound-backend-5b8b9f47fb-n88zq    1/1     Running       0          17s   10.244.0.37   minik
+pod/lostfound-backend-5b8b9f47fb-rbp9j    1/1     Running       0          8s    10.244.0.40   minik
+pod/lostfound-backend-cb58546df-sdl2k     1/1     Terminating   0          68s   10.244.0.33   minik
+pod/lostfound-db-0                        1/1     Running       0          9d    10.244.0.15   minik
+pod/lostfound-frontend-5fc9bb74ff-knct5   1/1     Running       0          17s   10.244.0.38   minik
+pod/lostfound-frontend-5fc9bb74ff-z5qxr   1/1     Running       0          9s    10.244.0.39   minik
+9       	Mon Oct 26 14:40:08 2026	deployed  	lostfound-1.0.0	1.0.0      	Upgrade complete
+
+$ kubectl -n lostfound get deploy
+NAME                 READY   IMAGE
+lostfound-backend    2       ghcr.io/prateek-singhwy/lostfound-backend:161991d
+lostfound-frontend   2       ghcr.io/prateek-singhwy/lostfound-frontend:161991d
+
+$ kubectl -n lostfound port-forward svc/lostfound-frontend 3090:80 &
+Forwarding from 127.0.0.1:3090 -> 8080
+
+$ ./scripts/smoke-test.sh http://localhost:3090
+smoke test against http://localhost:3090
+  PASS frontend /healthz
+  PASS React index served
+  PASS backend readiness, db up
+  PASS backend liveness
+  PASS POST /api/items -> id 4
+  PASS GET /api/items lists it
+  PASS PATCH -> returned
+  PASS DELETE -> 204
+  PASS second DELETE -> 404
+  PASS invalid kind -> 422
+all smoke tests passed
+
+$ helm rollback lostfound 8 -n lostfound --wait
+Rollback was a success! Happy Helming!
+
+$ helm history lostfound -n lostfound --max 3
+REVISION	UPDATED                 	STATUS    	CHART          	APP VERSION	DESCRIPTION
+8       	Mon Oct 26 14:39:17 2026	superseded	lostfound-1.0.0	1.0.0      	Rollback to 6
+9       	Mon Oct 26 14:40:08 2026	superseded	lostfound-1.0.0	1.0.0      	Upgrade complete
+10      	Mon Oct 26 14:40:30 2026	deployed  	lostfound-1.0.0	1.0.0      	Rollback to 8
+
+$ kubectl -n lostfound get deploy
+NAME                 READY   IMAGE
+lostfound-backend    2       ghcr.io/prateek-singhwy/lostfound-backend:v2
+lostfound-frontend   2       ghcr.io/prateek-singhwy/lostfound-frontend:v2
+
+$ kubectl -n monitoring get pods
+NAME                                     READY   STATUS    RESTARTS        AGE
+alertmanager-kps-alertmanager-0          2/2     Running   0               9d
+kps-grafana-9bb9dc9f8-2mgfr              3/3     Running   0               9d
+kps-kube-state-metrics-747b7b996-jmg54   1/1     Running   0               9d
+kps-operator-6c4d4df8b8-vrzkz            1/1     Running   3 (2d23h ago)   9d
+kps-prometheus-node-exporter-sg7ff       1/1     Running   2 (4d5h ago)    9d
+prometheus-kps-prometheus-0              2/2     Running   0               9d
+
+$ kubectl -n lostfound get servicemonitor,prometheusrule
+NAME                                                     AGE
+servicemonitor.monitoring.coreos.com/lostfound-backend   9d
+
+NAME                                                   AGE
+prometheusrule.monitoring.coreos.com/lostfound-rules   9d

@@ -13,3 +13,4 @@ junit.xml
 terraform/tfplan
 *.pem
 .DS_Store
+terraform/*.tfplan

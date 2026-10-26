@@ -22,6 +22,9 @@ DevOps layer around it can be demonstrated end to end and reproduced from this r
                                                ServiceMonitor ─► Prometheus ─► Alertmanager · Grafana dashboard
 ```
 
+**Demo:** [`demo/presentation.mp4`](demo/presentation.mp4) (presentation video with a live run) and
+[`demo/presentation.pptx`](demo/presentation.pptx) / [`.pdf`](demo/presentation.pdf) (slide deck); see [`demo/README.md`](demo/README.md).
+
 Full design notes: [`docs/architecture.md`](docs/architecture.md). Debugging runbook with real
 incidents from this cluster: [`docs/troubleshooting.md`](docs/troubleshooting.md). Captured output
 from every run referenced below: [`docs/evidence/`](docs/evidence) and [`docs/screenshots/`](docs/screenshots).
@@ -41,6 +44,7 @@ monitoring/         kube-prometheus-stack values, Alertmanager routing, Grafana 
 .github/workflows/  ci.yml (lint → test → build/scan/push → integration), cd.yml (Helm to kind), terraform.yml
 scripts/            cluster-up.sh, deploy.sh, smoke-test.sh, monitoring-up.sh, load.sh
 docs/               architecture, troubleshooting runbook, evidence and screenshots
+demo/               presentation video (MP4) and slide deck (PPTX + PDF)
 ```
 
 ---

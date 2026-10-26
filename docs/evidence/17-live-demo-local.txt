@@ -1,0 +1,58 @@
+# Live demo run, local (26 Oct 2026): tests, docker compose, smoke test
+
+$ git log --oneline -5
+161991d docs: terraform destroy output (26 resources destroyed, account verified empty)
+6d71a0c docs: EKS deployment write-up, browser screenshot, Free Tier and IMDS hop-limit incidents
+198f5e6 docs: AWS CLI evidence of VPC, subnets, EKS cluster, node group and ELB; LB smoke test
+cd12a33 docs: EKS deployment evidence (nodes, CSI incident and fix, pods, services, PVC, HPA, helm list)
+f396a34 fix(terraform): node launch template with IMDSv2 hop limit 2 (fixes EBS CSI credential failure)
+
+$ cd backend && pytest -q
+.........                                                                [100%]
+
+---------- coverage: platform darwin, python 3.13.1-final-0 ----------
+Name              Stmts   Miss  Cover   Missing
+-----------------------------------------------
+app/__init__.py       0      0   100%
+app/main.py         121     16    87%   48-50, 82, 90-110
+-----------------------------------------------
+TOTAL               121     16    87%
+
+Required test coverage of 80% reached. Total coverage: 86.78%
+
+$ docker compose up -d --build
+ Container lostfound-backend-1  Recreate
+ Container lostfound-backend-1  Recreated
+ Container lostfound-frontend-1  Recreate
+ Container lostfound-frontend-1  Recreated
+ Container lostfound-db-1  Waiting
+ Container lostfound-db-1  Healthy
+ Container lostfound-backend-1  Starting
+ Container lostfound-backend-1  Started
+ Container lostfound-backend-1  Waiting
+ Container lostfound-backend-1  Healthy
+ Container lostfound-frontend-1  Starting
+ Container lostfound-frontend-1  Started
+
+$ docker compose ps
+NAME                   IMAGE                      STATUS                            PORTS
+lostfound-backend-1    lostfound-backend:local    Up 19 seconds (healthy)           0.0.0.0:8000->8000/tcp
+lostfound-db-1         postgres:16-alpine         Up 9 days (healthy)               5432/tcp
+lostfound-frontend-1   lostfound-frontend:local   Up 8 seconds (health: starting)   0.0.0.0:3080->8080/tcp
+
+$ docker compose exec backend id
+uid=10001(api) gid=10001(api) groups=10001(api)
+
+$ ./scripts/smoke-test.sh http://localhost:3080
+smoke test against http://localhost:3080
+  PASS frontend /healthz
+  PASS React index served
+  PASS backend readiness, db up
+  PASS backend liveness
+  PASS POST /api/items -> id 8
+  PASS GET /api/items lists it
+  PASS PATCH -> returned
+  PASS DELETE -> 204
+  PASS second DELETE -> 404
+  PASS invalid kind -> 422
+all smoke tests passed
